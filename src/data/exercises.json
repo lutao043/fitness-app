@@ -1,0 +1,1606 @@
+[
+  {
+    "name": "平板卧推",
+    "muscles": [
+      "胸",
+      "三头",
+      "肩前束"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 4,
+    "reps": 12,
+    "base": 20,
+    "barKg": 20,
+    "variants": [
+      {
+        "id": "v-smith",
+        "equip": "史密斯机",
+        "semantics": "direct",
+        "label": ""
+      },
+      {
+        "id": "v-db",
+        "equip": "哑铃",
+        "semantics": "direct",
+        "label": "哑铃卧推"
+      }
+    ]
+  },
+  {
+    "name": "上斜哑铃卧推",
+    "muscles": [
+      "胸",
+      "肩前束"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 4,
+    "reps": 12,
+    "base": 15
+  },
+  {
+    "name": "上斜杠铃卧推",
+    "muscles": [
+      "胸",
+      "肩前束"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 4,
+    "reps": 10,
+    "base": 30,
+    "barKg": 20
+  },
+  {
+    "name": "哑铃飞鸟",
+    "muscles": [
+      "胸"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 10
+  },
+  {
+    "name": "器械夹胸",
+    "muscles": [
+      "胸"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 12,
+    "base": 30,
+    "variants": [
+      {
+        "id": "v-cable",
+        "equip": "绳索",
+        "semantics": "direct",
+        "label": "龙门架夹胸"
+      }
+    ]
+  },
+  {
+    "name": "坐姿推胸",
+    "muscles": [
+      "胸",
+      "三头",
+      "肩前束"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 4,
+    "reps": 12,
+    "base": 30
+  },
+  {
+    "name": "俯卧撑",
+    "muscles": [
+      "胸",
+      "三头",
+      "肩前束"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 4,
+    "reps": 15,
+    "homeOk": true
+  },
+  {
+    "name": "上斜俯卧撑",
+    "muscles": [
+      "胸",
+      "三头"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 15,
+    "homeOk": true,
+    "note": "手撑高一点，比标准俯卧撑轻"
+  },
+  {
+    "name": "引体向上",
+    "muscles": [
+      "背",
+      "二头"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 4,
+    "reps": 8,
+    "homeOk": true,
+    "note": "居家需单杠或门框杠",
+    "variants": [
+      {
+        "id": "v-assisted",
+        "equip": "助力器械",
+        "semantics": "assist",
+        "label": "助力引体机"
+      },
+      {
+        "id": "v-band",
+        "equip": "弹力带",
+        "semantics": "band",
+        "label": "弹力带辅助"
+      }
+    ]
+  },
+  {
+    "name": "高位下拉",
+    "muscles": [
+      "背",
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 4,
+    "reps": 12,
+    "base": 45,
+    "variants": [
+      {
+        "id": "v-cable",
+        "equip": "绳索",
+        "semantics": "direct",
+        "label": "龙门架 + 下拉杆"
+      },
+      {
+        "id": "v-cable-1arm",
+        "equip": "绳索",
+        "semantics": "direct",
+        "label": "单臂绳索下拉"
+      },
+      {
+        "id": "v-assist",
+        "equip": "助力器械",
+        "semantics": "assist",
+        "label": "助力引体机"
+      },
+      {
+        "id": "v-band",
+        "equip": "弹力带",
+        "semantics": "band",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "name": "坐姿划船",
+    "muscles": [
+      "背",
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 4,
+    "reps": 12,
+    "base": 40,
+    "variants": [
+      {
+        "id": "v-cable",
+        "equip": "绳索",
+        "semantics": "direct",
+        "label": "龙门架坐姿划船"
+      }
+    ]
+  },
+  {
+    "name": "杠铃划船",
+    "muscles": [
+      "背",
+      "肩后束",
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 4,
+    "reps": 8,
+    "base": 30,
+    "barKg": 20
+  },
+  {
+    "name": "T杠划船",
+    "muscles": [
+      "背",
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 4,
+    "reps": 10,
+    "base": 30,
+    "barKg": 20
+  },
+  {
+    "name": "哑铃单臂划船",
+    "muscles": [
+      "背",
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "single_side",
+    "sets": 3,
+    "reps": 12,
+    "base": 20,
+    "homeOk": true
+  },
+  {
+    "name": "硬拉",
+    "muscles": [
+      "背",
+      "腘绳",
+      "臀",
+      "下背"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 4,
+    "reps": 6,
+    "base": 60,
+    "barKg": 20
+  },
+  {
+    "name": "直臂下压",
+    "muscles": [
+      "背"
+    ],
+    "type": "weight",
+    "equip": "绳索",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 12,
+    "base": 20
+  },
+  {
+    "name": "反向划船",
+    "muscles": [
+      "背",
+      "二头"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 10,
+    "homeOk": true,
+    "note": "桌子下或低杠，身体越平越难"
+  },
+  {
+    "name": "弹力带划船",
+    "muscles": [
+      "背",
+      "二头"
+    ],
+    "type": "reps",
+    "equip": "弹力带",
+    "loadMode": "bodyweight",
+    "sets": 4,
+    "reps": 12,
+    "homeOk": true
+  },
+  {
+    "name": "弹力带下拉",
+    "muscles": [
+      "背",
+      "二头"
+    ],
+    "type": "reps",
+    "equip": "弹力带",
+    "loadMode": "bodyweight",
+    "sets": 4,
+    "reps": 15,
+    "homeOk": true,
+    "note": "门框固定，替代高位下拉"
+  },
+  {
+    "name": "哑铃耸肩",
+    "muscles": [
+      "斜方"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 15,
+    "base": 18,
+    "homeOk": true
+  },
+  {
+    "name": "杠铃耸肩",
+    "muscles": [
+      "斜方"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 3,
+    "reps": 15,
+    "base": 30,
+    "barKg": 20,
+    "variants": [
+      {
+        "id": "v-smith",
+        "equip": "史密斯机",
+        "semantics": "direct",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "name": "山羊挺身",
+    "muscles": [
+      "下背",
+      "臀"
+    ],
+    "type": "reps",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 15,
+    "note": "罗马椅；不要甩起来"
+  },
+  {
+    "name": "超人式",
+    "muscles": [
+      "下背",
+      "臀"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 15,
+    "homeOk": true
+  },
+  {
+    "name": "坐姿肩推",
+    "muscles": [
+      "肩前束",
+      "肩中束",
+      "三头"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 4,
+    "reps": 12,
+    "base": 12
+  },
+  {
+    "name": "哑铃肩推",
+    "muscles": [
+      "肩前束",
+      "肩中束",
+      "三头"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 10,
+    "homeOk": true
+  },
+  {
+    "name": "杠铃肩推",
+    "muscles": [
+      "肩前束",
+      "肩中束",
+      "三头"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 4,
+    "reps": 8,
+    "base": 20,
+    "barKg": 20,
+    "variants": [
+      {
+        "id": "v-smith",
+        "equip": "史密斯机",
+        "semantics": "direct",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "name": "器械肩推",
+    "muscles": [
+      "肩前束",
+      "肩中束",
+      "三头"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 4,
+    "reps": 12,
+    "base": 20
+  },
+  {
+    "name": "阿诺德推举",
+    "muscles": [
+      "肩前束",
+      "肩中束"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 10,
+    "base": 10
+  },
+  {
+    "name": "前平举",
+    "muscles": [
+      "肩前束"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 6,
+    "homeOk": true
+  },
+  {
+    "name": "绳索前平举",
+    "muscles": [
+      "肩前束"
+    ],
+    "type": "weight",
+    "equip": "绳索",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 15,
+    "base": 5
+  },
+  {
+    "name": "侧平举",
+    "muscles": [
+      "肩中束"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 8,
+    "homeOk": true
+  },
+  {
+    "name": "绳索侧平举",
+    "muscles": [
+      "肩中束"
+    ],
+    "type": "weight",
+    "equip": "绳索",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 15,
+    "base": 5
+  },
+  {
+    "name": "器械侧平举",
+    "muscles": [
+      "肩中束"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 15,
+    "base": 20
+  },
+  {
+    "name": "反向飞鸟",
+    "muscles": [
+      "肩后束"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 6
+  },
+  {
+    "name": "俯身飞鸟",
+    "muscles": [
+      "肩后束"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 15,
+    "base": 6,
+    "homeOk": true
+  },
+  {
+    "name": "器械反向飞鸟",
+    "muscles": [
+      "肩后束"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 15,
+    "base": 15
+  },
+  {
+    "name": "面拉",
+    "muscles": [
+      "肩后束",
+      "背"
+    ],
+    "type": "weight",
+    "equip": "绳索",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 15,
+    "base": 15
+  },
+  {
+    "name": "哑铃弯举",
+    "muscles": [
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 10,
+    "homeOk": true
+  },
+  {
+    "name": "杠铃弯举",
+    "muscles": [
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 4,
+    "reps": 10,
+    "base": 15,
+    "barKg": 20
+  },
+  {
+    "name": "锤式弯举",
+    "muscles": [
+      "二头",
+      "前臂"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 10,
+    "homeOk": true
+  },
+  {
+    "name": "集中弯举",
+    "muscles": [
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "single_side",
+    "sets": 3,
+    "reps": 12,
+    "base": 10,
+    "homeOk": true
+  },
+  {
+    "name": "上斜哑铃弯举",
+    "muscles": [
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 8,
+    "homeOk": true
+  },
+  {
+    "name": "反握弯举",
+    "muscles": [
+      "二头",
+      "前臂"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 12,
+    "barKg": 20
+  },
+  {
+    "name": "牧师凳弯举",
+    "muscles": [
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 12,
+    "base": 15
+  },
+  {
+    "name": "弹力带弯举",
+    "muscles": [
+      "二头"
+    ],
+    "type": "reps",
+    "equip": "弹力带",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 15,
+    "homeOk": true
+  },
+  {
+    "name": "双杠臂屈伸",
+    "muscles": [
+      "三头",
+      "胸"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 10,
+    "variants": [
+      {
+        "id": "v-assisted",
+        "equip": "助力器械",
+        "semantics": "assist",
+        "label": "助力双杠机"
+      }
+    ]
+  },
+  {
+    "name": "绳索下压",
+    "muscles": [
+      "三头"
+    ],
+    "type": "weight",
+    "equip": "绳索",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 12,
+    "base": 20,
+    "variants": [
+      {
+        "id": "v-machine",
+        "equip": "器械",
+        "semantics": "direct",
+        "label": "器械下压"
+      }
+    ]
+  },
+  {
+    "name": "绳索过顶臂屈伸",
+    "muscles": [
+      "三头"
+    ],
+    "type": "weight",
+    "equip": "绳索",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 12,
+    "base": 15
+  },
+  {
+    "name": "窄距卧推",
+    "muscles": [
+      "三头",
+      "胸"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 3,
+    "reps": 10,
+    "base": 25,
+    "barKg": 20
+  },
+  {
+    "name": "仰卧臂屈伸",
+    "muscles": [
+      "三头"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 3,
+    "reps": 10,
+    "base": 15,
+    "barKg": 20
+  },
+  {
+    "name": "哑铃颈后臂屈伸",
+    "muscles": [
+      "三头"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 10,
+    "homeOk": true
+  },
+  {
+    "name": "俯身臂屈伸",
+    "muscles": [
+      "三头"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "single_side",
+    "sets": 3,
+    "reps": 12,
+    "base": 6,
+    "homeOk": true
+  },
+  {
+    "name": "窄距俯卧撑",
+    "muscles": [
+      "三头",
+      "胸"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 12,
+    "homeOk": true
+  },
+  {
+    "name": "凳上反屈伸",
+    "muscles": [
+      "三头"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 12,
+    "homeOk": true
+  },
+  {
+    "name": "腕弯举",
+    "muscles": [
+      "前臂"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 15,
+    "base": 8,
+    "homeOk": true
+  },
+  {
+    "name": "反向腕弯举",
+    "muscles": [
+      "前臂"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 15,
+    "base": 6,
+    "homeOk": true
+  },
+  {
+    "name": "农夫行走",
+    "muscles": [
+      "前臂",
+      "核心"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 30,
+    "base": 20,
+    "homeOk": true
+  },
+  {
+    "name": "悬垂握力",
+    "muscles": [
+      "前臂",
+      "背"
+    ],
+    "type": "time",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 30,
+    "homeOk": true,
+    "note": "单杠上吊着，练握力"
+  },
+  {
+    "name": "平板撑",
+    "muscles": [
+      "核心"
+    ],
+    "type": "time",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 45,
+    "homeOk": true
+  },
+  {
+    "name": "侧平板撑",
+    "muscles": [
+      "核心"
+    ],
+    "type": "time",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 30,
+    "homeOk": true
+  },
+  {
+    "name": "卷腹",
+    "muscles": [
+      "核心"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 20,
+    "homeOk": true
+  },
+  {
+    "name": "仰卧举腿",
+    "muscles": [
+      "核心"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 15,
+    "homeOk": true
+  },
+  {
+    "name": "悬垂举腿",
+    "muscles": [
+      "核心"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 12
+  },
+  {
+    "name": "绳索卷腹",
+    "muscles": [
+      "核心"
+    ],
+    "type": "weight",
+    "equip": "绳索",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 15,
+    "base": 25
+  },
+  {
+    "name": "登山者",
+    "muscles": [
+      "核心"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 20,
+    "homeOk": true
+  },
+  {
+    "name": "俄罗斯转体",
+    "muscles": [
+      "核心"
+    ],
+    "type": "reps",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 20,
+    "homeOk": true
+  },
+  {
+    "name": "死虫",
+    "muscles": [
+      "核心"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 16,
+    "homeOk": true
+  },
+  {
+    "name": "健腹轮",
+    "muscles": [
+      "核心"
+    ],
+    "type": "reps",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 10,
+    "homeOk": true
+  },
+  {
+    "name": "杠铃深蹲",
+    "muscles": [
+      "股四头",
+      "臀",
+      "核心"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 4,
+    "reps": 8,
+    "base": 40,
+    "barKg": 20,
+    "variants": [
+      {
+        "id": "v-smith",
+        "equip": "史密斯机",
+        "semantics": "direct",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "name": "高脚杯深蹲",
+    "muscles": [
+      "股四头",
+      "臀"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 4,
+    "reps": 12,
+    "base": 24,
+    "homeOk": true
+  },
+  {
+    "name": "哈克深蹲",
+    "muscles": [
+      "股四头",
+      "臀"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 4,
+    "reps": 12,
+    "base": 60
+  },
+  {
+    "name": "腿举",
+    "muscles": [
+      "股四头",
+      "臀"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 4,
+    "reps": 12,
+    "base": 80
+  },
+  {
+    "name": "腿屈伸",
+    "muscles": [
+      "股四头"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 15,
+    "base": 30
+  },
+  {
+    "name": "箭步蹲",
+    "muscles": [
+      "股四头",
+      "臀"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 10,
+    "homeOk": true
+  },
+  {
+    "name": "保加利亚分腿蹲",
+    "muscles": [
+      "股四头",
+      "臀"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 12,
+    "homeOk": true
+  },
+  {
+    "name": "徒手深蹲",
+    "muscles": [
+      "股四头",
+      "臀"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 4,
+    "reps": 20,
+    "homeOk": true
+  },
+  {
+    "name": "靠墙静蹲",
+    "muscles": [
+      "股四头"
+    ],
+    "type": "time",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 45,
+    "homeOk": true
+  },
+  {
+    "name": "罗马尼亚硬拉",
+    "muscles": [
+      "腘绳",
+      "臀"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 40,
+    "barKg": 20
+  },
+  {
+    "name": "单腿罗马尼亚硬拉",
+    "muscles": [
+      "腘绳",
+      "臀"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 12,
+    "homeOk": true
+  },
+  {
+    "name": "早安式",
+    "muscles": [
+      "腘绳",
+      "下背"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 25,
+    "barKg": 20
+  },
+  {
+    "name": "腿弯举",
+    "muscles": [
+      "腘绳"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 12,
+    "base": 25
+  },
+  {
+    "name": "臀推",
+    "muscles": [
+      "臀",
+      "腘绳"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 4,
+    "reps": 10,
+    "base": 40,
+    "barKg": 20
+  },
+  {
+    "name": "臀桥",
+    "muscles": [
+      "臀",
+      "腘绳"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 15,
+    "homeOk": true
+  },
+  {
+    "name": "单腿臀桥",
+    "muscles": [
+      "臀"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 12,
+    "homeOk": true
+  },
+  {
+    "name": "髋外展",
+    "muscles": [
+      "臀"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 15,
+    "base": 30
+  },
+  {
+    "name": "绳索后踢腿",
+    "muscles": [
+      "臀"
+    ],
+    "type": "weight",
+    "equip": "绳索",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 15,
+    "base": 10
+  },
+  {
+    "name": "弹力带侧走",
+    "muscles": [
+      "臀"
+    ],
+    "type": "reps",
+    "equip": "弹力带",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 20,
+    "homeOk": true
+  },
+  {
+    "name": "站姿提踵",
+    "muscles": [
+      "小腿"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 4,
+    "reps": 15,
+    "base": 40
+  },
+  {
+    "name": "坐姿提踵",
+    "muscles": [
+      "小腿"
+    ],
+    "type": "weight",
+    "equip": "器械",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 15,
+    "base": 30
+  },
+  {
+    "name": "哑铃提踵",
+    "muscles": [
+      "小腿"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 15,
+    "base": 16,
+    "homeOk": true
+  },
+  {
+    "name": "自重提踵",
+    "muscles": [
+      "小腿"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 4,
+    "reps": 20,
+    "homeOk": true
+  },
+  {
+    "name": "直立划船",
+    "muscles": [
+      "肩中束",
+      "斜方"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 4,
+    "reps": 12,
+    "base": 15,
+    "barKg": 20,
+    "variants": [
+      {
+        "id": "v-db",
+        "equip": "哑铃",
+        "semantics": "direct",
+        "label": ""
+      }
+    ],
+    "homeOk": true
+  },
+  {
+    "name": "单臂绳索划船",
+    "muscles": [
+      "背",
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "绳索",
+    "loadMode": "single_side",
+    "sets": 3,
+    "reps": 12,
+    "base": 20
+  },
+  {
+    "name": "单臂绳索侧平举",
+    "muscles": [
+      "肩中束"
+    ],
+    "type": "weight",
+    "equip": "绳索",
+    "loadMode": "single_side",
+    "sets": 3,
+    "reps": 12,
+    "base": 5
+  },
+  {
+    "name": "绳索弯举",
+    "muscles": [
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "绳索",
+    "loadMode": "machine",
+    "sets": 3,
+    "reps": 12,
+    "base": 15
+  },
+  {
+    "name": "蜘蛛弯举",
+    "muscles": [
+      "二头"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 8,
+    "homeOk": true
+  },
+  {
+    "name": "单臂绳索下压",
+    "muscles": [
+      "三头"
+    ],
+    "type": "weight",
+    "equip": "绳索",
+    "loadMode": "single_side",
+    "sets": 3,
+    "reps": 12,
+    "base": 15
+  },
+  {
+    "name": "宽距俯卧撑",
+    "muscles": [
+      "胸",
+      "三头",
+      "肩前束"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 15,
+    "homeOk": true
+  },
+  {
+    "name": "下斜俯卧撑",
+    "muscles": [
+      "胸",
+      "三头"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 12,
+    "homeOk": true
+  },
+  {
+    "name": "弹力带卧推",
+    "muscles": [
+      "胸",
+      "三头",
+      "肩前束"
+    ],
+    "type": "reps",
+    "equip": "弹力带",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 15,
+    "homeOk": true
+  },
+  {
+    "name": "弹力带下压",
+    "muscles": [
+      "三头"
+    ],
+    "type": "reps",
+    "equip": "弹力带",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 15,
+    "homeOk": true
+  },
+  {
+    "name": "前蹲",
+    "muscles": [
+      "股四头",
+      "臀"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 4,
+    "reps": 12,
+    "base": 20,
+    "barKg": 20
+  },
+  {
+    "name": "反向箭步蹲",
+    "muscles": [
+      "股四头",
+      "臀"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 10,
+    "homeOk": true
+  },
+  {
+    "name": "单腿蹲",
+    "muscles": [
+      "股四头",
+      "臀",
+      "核心"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 10,
+    "homeOk": true
+  },
+  {
+    "name": "登阶",
+    "muscles": [
+      "股四头",
+      "臀"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 10,
+    "homeOk": true
+  },
+  {
+    "name": "直腿硬拉",
+    "muscles": [
+      "腘绳",
+      "臀",
+      "下背"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 30,
+    "barKg": 20
+  },
+  {
+    "name": "相扑硬拉",
+    "muscles": [
+      "臀",
+      "腘绳",
+      "股四头"
+    ],
+    "type": "weight",
+    "equip": "杠铃",
+    "loadMode": "barbell",
+    "sets": 4,
+    "reps": 8,
+    "base": 40,
+    "barKg": 20
+  },
+  {
+    "name": "北欧腿弯举",
+    "muscles": [
+      "腘绳"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 8,
+    "homeOk": true
+  },
+  {
+    "name": "单腿提踵",
+    "muscles": [
+      "小腿"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 4,
+    "reps": 15,
+    "homeOk": true
+  },
+  {
+    "name": "侧卧抬腿",
+    "muscles": [
+      "臀"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 15,
+    "homeOk": true
+  },
+  {
+    "name": "鸟狗式",
+    "muscles": [
+      "核心",
+      "下背"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 12,
+    "homeOk": true
+  },
+  {
+    "name": "反向卷腹",
+    "muscles": [
+      "核心"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 15,
+    "homeOk": true
+  },
+  {
+    "name": "仰卧两头起",
+    "muscles": [
+      "核心"
+    ],
+    "type": "reps",
+    "equip": "自重",
+    "loadMode": "bodyweight",
+    "sets": 3,
+    "reps": 12,
+    "homeOk": true
+  },
+  {
+    "name": "上斜哑铃飞鸟",
+    "muscles": [
+      "胸",
+      "肩前束"
+    ],
+    "type": "weight",
+    "equip": "哑铃",
+    "loadMode": "dumbbell",
+    "sets": 3,
+    "reps": 12,
+    "base": 8,
+    "homeOk": true
+  }
+]

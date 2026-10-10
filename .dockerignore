@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.gitignore
+data
+docs
+tests
+test-results
+playwright-report
+coverage
+*.log
+.env
+.env*.local
+scripts/serve-prototype.ps1
+repro*.mjs

@@ -1,0 +1,1 @@
+ALTER TABLE `exercise_variant` ADD `read_unit` text;

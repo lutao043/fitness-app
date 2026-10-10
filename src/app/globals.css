@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+/* ——————————————————————————————————————————————————————————————
+   设计令牌：移动优先、深色跟随系统（需求书第 5 章：手机竖屏单手可达）
+   —— 颜色一律走 CSS 变量，页面里只用 Tailwind 工具类（bg-card / text-muted…）
+—————————————————————————————————————————————————————————————— */
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --fg: #16181d;
+  --muted: #6b7280;
+  --border: #e4e6ea;
+  --accent: #2f6bff;
+  --accent-fg: #ffffff;
+  --accent-soft: #e8efff;
+  --ok: #16a34a;
+  --ok-soft: #e7f6ec;
+  --warn: #d97706;
+  --warn-soft: #fdf3e3;
+  --alert: #dc2626;
+  --alert-soft: #fdecec;
+  --shadow: 0 1px 2px rgb(16 18 29 / 6%), 0 8px 24px rgb(16 18 29 / 6%);
+  --r: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d0f13;
+    --card: #171a20;
+    --fg: #eef0f4;
+    --muted: #9aa1ac;
+    --border: #262a32;
+    --accent: #6b93ff;
+    --accent-fg: #0b1220;
+    --accent-soft: #1b2536;
+    --ok: #4ade80;
+    --ok-soft: #12251a;
+    --warn: #fbbf24;
+    --warn-soft: #2a2211;
+    --alert: #f87171;
+    --alert-soft: #2c1616;
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 35%);
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-alert: var(--alert);
+  --color-alert-soft: var(--alert-soft);
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC",
+    "Source Han Sans SC", sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+/* 手机竖屏单手可达：内容居中成一列，底部给 Tab 栏留位置 */
+.shell {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 14px calc(84px + env(safe-area-inset-bottom));
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 14px;
+}
+
+.sec-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 18px 4px 8px;
+  letter-spacing: 0.02em;
+}
+
+/* 按钮：主操作在屏幕下半区、点击区域 ≥ 44px（第 12 章第 9 条：录入门槛要低） */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform 0.06s ease,
+    background-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active {
+  transform: scale(0.985);
+}
+.btn:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.btn-secondary {
+  background: var(--card);
+  color: var(--fg);
+  border-color: var(--border);
+}
+.btn-soft {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.btn-danger {
+  background: var(--alert-soft);
+  color: var(--alert);
+}
+.btn-block {
+  width: 100%;
+}
+
+/* 小控件命中区（issue #4 第 4 项 / 需求书 v1.25）：手机是主场景，可点元素 ≥ 32px。
+   .tap       = 可见 32×32 起步的小控件（胶囊 / 分段 / 次级小按钮）；
+   .tap-ghost = 文字链接样式的按钮（← 返回 / 改 / 删 / 记围度 …），
+                只用伪元素撑命中区，不动视觉、不动外边距与行高。 */
+.tap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+}
+.tap-ghost {
+  position: relative;
+}
+.tap-ghost::after {
+  content: "";
+  position: absolute;
+  /* 横向 12px、纵向 8px：密集列表里相邻两行的命中区不重叠（行距 ≥ 34px 时） */
+  inset: -8px -12px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.pill-ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.pill-warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.pill-alert {
+  background: var(--alert-soft);
+  color: var(--alert);
+}
+.pill-plain {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.hr {
+  height: 1px;
+  background: var(--border);
+  margin: 12px 0;
+}
+
+.input {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 16px; /* iOS 上 <16px 会触发自动放大 */
+}
+.input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

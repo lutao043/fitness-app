@@ -1,0 +1,52 @@
+# 自托管部署（单容器）。目录里只要三样东西：
+#   docker-compose.yml   ← 本文件
+#   .env                 ← SESSION_SECRET / API_TOKEN（见 .env.example）
+#   data/                ← 数据库与备份（权限给容器用户 uid 1000）
+#
+# 启动：docker compose up -d --build
+# 更新：拉取新代码后重新执行同一条命令（镜像重新构建、容器重建）
+# 数据都在 ./data 挂载里；数据库迁移在容器启动时自动执行。
+#
+# 首次启动：浏览器打开 http://<服务器IP>:3210 → 会引导设一个密码。
+
+services:
+  fitness-app:
+    # 默认用本地构建的镜像（下面的 build 段）；用镜像仓库分发时，在 .env 里
+    # 用 FITNESS_APP_IMAGE 覆盖成 <registry>/<owner>/<repo>:tag
+    image: ${FITNESS_APP_IMAGE:-fitness-app:latest}
+    build: .
+    container_name: fitness-app
+    restart: unless-stopped
+    ports:
+      - "3210:3210"
+    environment:
+      TZ: Asia/Shanghai
+      DATA_DIR: /app/data
+      MIGRATIONS_DIR: /app/drizzle
+      # session cookie 签名密钥（必填，openssl rand -base64 32 生成）
+      SESSION_SECRET: ${SESSION_SECRET:?请在 .env 里配置 SESSION_SECRET}
+      # 助手调 /api/v1/* 用的 Bearer token（可留空，留空则只认网页登录态）
+      API_TOKEN: ${API_TOKEN:-}
+      APP_USERNAME: ${APP_USERNAME:-me}
+    volumes:
+      # 数据库 + 备份都在这里；不要用 Docker 命名卷，方便直接看到文件、方便 VACUUM INTO 落盘
+      - ./data:/app/data
+    # 日志占用兜底：json-file 默认不轮转会一直长；应用侧另有按天文件日志
+    # （data/logs/，保留最近 7 天）。这里改配置要【重建容器】才生效，重建后是新容器新日志文件。
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3210/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

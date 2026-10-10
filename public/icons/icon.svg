@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="健身助手">
+  <defs>
+    <!-- 光源在左上角：从设计令牌里的深色态 accent 渐变到浅色态 accent，再压深一档收边 -->
+    <radialGradient id="tile" cx="0.3" cy="0.12" r="1.1">
+      <stop offset="0" stop-color="#6b93ff"/>
+      <stop offset="0.55" stop-color="#2f6bff"/>
+      <stop offset="1" stop-color="#1b3fae"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#tile)"/>
+  <g fill="#ffffff">
+    <rect x="108" y="150" width="60" height="212" rx="30"/>
+    <rect x="168" y="180" width="48" height="152" rx="24"/>
+    <rect x="186" y="212" width="140" height="88"/>
+    <rect x="296" y="180" width="48" height="152" rx="24"/>
+    <rect x="344" y="150" width="60" height="212" rx="30"/>
+  </g>
+</svg>

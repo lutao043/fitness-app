@@ -1,0 +1,14 @@
+# pnpm 配置（本仓库单包；pnpm 10+ 把配置放 workspace 文件里）
+# Windows 开发机：Next 的 standalone 产物会复制/重建符号链接，未开启「开发者模式」会 EPERM。
+# hoisted 布局不用符号链接，本地与容器都稳（Docker 里同样可用，只是 node_modules 大一点）。
+nodeLinker: hoisted
+
+# 原生/需编译的依赖要显式表态（默认拦截安装脚本，减少供应链攻击面）。
+allowBuilds:
+  # better-sqlite3 13.x 在 npm 包里自带全平台预编译二进制（prebuilds/*.node），
+  # 不需要 prebuild-install / node-gyp：装完即可 require。关掉它的脚本，
+  # 免得在没有 MSVC 的机器上回退编译失败（实测过：脚本失败但预编译件是好的）。
+  better-sqlite3: false
+  esbuild: true
+  "@tailwindcss/oxide": true
+  unrs-resolver: true

@@ -1,0 +1,8 @@
+# 仓库内一律存 LF。部署目标是 Linux 容器（需求书 NFR-1），LF 是唯一正确的存储格式；
+# 显式声明可以和各人本地的 core.autocrlf 设置解耦，避免出现「我这儿没改却被标记为已修改」。
+* text=auto eol=lf
+
+# Windows 专用的本地开发脚本，检出时保持 CRLF
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf

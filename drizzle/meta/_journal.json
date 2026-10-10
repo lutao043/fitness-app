@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1790588455946,
+      "tag": "0000_aspiring_goblin_queen",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1790749499362,
+      "tag": "0001_parched_loki",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790756337554,
+      "tag": "0002_plain_black_queen",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1791429614037,
+      "tag": "0003_brown_agent_brand",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1791532466031,
+      "tag": "0004_illegal_wendell_rand",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791563077881,
+      "tag": "0005_mixed_red_shift",
+      "breakpoints": true
+    }
+  ]
+}
