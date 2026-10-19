@@ -1,0 +1,1 @@
+ALTER TABLE `set_log` ADD `started_at` text;

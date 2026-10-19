@@ -61,8 +61,14 @@ export function remindersEnabled(db: Db): boolean {
   return settingsMap(db).workout_reminder_on !== "false";
 }
 
+/** 训练提醒的**工作日档**（既有设置项；工作日 + 调休上班日走它） */
 export function reminderTime(db: Db): string {
   return settingsMap(db).reminder_time ?? "22:30";
+}
+
+/** 训练提醒的**休息日档**（v1.49 / 13.21：周末 + 法定节假日走它；默认与工作日档同值 = 分档前行为） */
+export function reminderTimeRestday(db: Db): string {
+  return settingsMap(db).reminder_time_restday ?? "22:30";
 }
 
 /** 首页/接口的"今天"总装（GET /api/v1/today 的数据源） */
@@ -264,6 +270,8 @@ export function sessionDetail(db: Db, sessionId: number) {
       reps: schema.setLog.reps,
       durationSec: schema.setLog.durationSec,
       totalLoadKg: schema.setLog.totalLoadKg,
+      // 本组开始时刻（v1.50 / issue #75）：组间歇的起算点，读侧（记录页 / 助手）与 doneAt 成对看
+      startedAt: schema.setLog.startedAt,
       restBeforeSec: schema.setLog.restBeforeSec,
       sameExercise: schema.setLog.sameExercise,
       doneAt: schema.setLog.doneAt,

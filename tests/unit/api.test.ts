@@ -231,6 +231,7 @@ describe("训练会话：幂等与口径（FR-7 / 13.1 / 13.5）", () => {
         set_no: 1,
         weight_kg: 20,
         reps: 12,
+        started_at: "2026-09-28T13:00:30.000Z",
         done_at: "2026-09-28T13:01:00.000Z",
       }),
       params({ id: String(sessionId) }),
@@ -239,7 +240,7 @@ describe("训练会话：幂等与口径（FR-7 / 13.1 / 13.5）", () => {
     const body = await jsonOf(res);
     expect(body.totalLoadKg).toBe(60);
     expect(body.volumeKg).toBe(720);
-    expect(body.restBeforeSec).toBeNull(); // 第一组没有组间歇
+    expect(body.restBeforeSec).toBeNull(); // 第一组没有组间歇（哪怕点了开始）
     expect(body.sameExercise).toBe(false);
   });
 
@@ -307,6 +308,7 @@ describe("训练会话：幂等与口径（FR-7 / 13.1 / 13.5）", () => {
       set_no: 1,
       weight_kg: 22.5,
       reps: 12,
+      started_at: "2026-09-28T13:00:30.000Z",
       done_at: "2026-09-28T13:01:00.000Z",
     };
     const res = await POST(
@@ -332,7 +334,10 @@ describe("训练会话：幂等与口径（FR-7 / 13.1 / 13.5）", () => {
         set_no: 2,
         weight_kg: 20,
         reps: 12,
-        done_at: "2026-09-28T13:02:30.000Z", // 与第一组相隔 90 秒
+        // 组间歇 = 上一组完成(13:01:00) → 本组开始(13:02:30) = 90 秒；
+        // 本组做了 40 秒（13:03:10 记下）—— 做组耗时不算进休息（FR-9 v1.50）
+        started_at: "2026-09-28T13:02:30.000Z",
+        done_at: "2026-09-28T13:03:10.000Z",
       }),
       params({ id: String(sessionId) }),
     );
@@ -346,7 +351,8 @@ describe("训练会话：幂等与口径（FR-7 / 13.1 / 13.5）", () => {
         exercise_id: assistedPullId,
         set_no: 1,
         reps: 8,
-        done_at: "2026-09-28T13:05:00.000Z",
+        started_at: "2026-09-28T13:05:40.000Z", // 距上一组完成(13:03:10) 150 秒
+        done_at: "2026-09-28T13:06:20.000Z",
       }),
       params({ id: String(sessionId) }),
     );
@@ -1106,6 +1112,14 @@ describe("v1.1 剩余：统计完整版与数据管理", () => {
     const schema = await import("@/db/schema");
     const bench = db.select().from(schema.exercise).all().find((e) => e.name.includes("卧推"));
     benchId = bench!.id;
+
+    // 这台动作 × 默认变体的既有组先清掉：上面那些用例会在写死的 2026-09-28 落组，
+    // 而"重锚询问"用例的清理窗口是「今天 − 15 天」—— 日期一翻页就不再覆盖它们（踩坑 15），
+    // 全量清单里的 sets 会随日期漂移。本用例只断言自己写的这 2 组，先清干净再写。
+    const orm = await import("drizzle-orm");
+    db.delete(schema.setLog)
+      .where(orm.and(orm.eq(schema.setLog.exerciseId, benchId), orm.isNull(schema.setLog.variantId)))
+      .run();
 
     const { POST: sessPOST } = await routes.sessions();
     const created = await sessPOST(

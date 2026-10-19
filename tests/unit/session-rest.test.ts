@@ -1,25 +1,29 @@
 /**
- * 训练页两态与暂停语义（issue #33 / v1.39）。
+ * 训练页三态与暂停语义（issue #33 / v1.39 两态；issue #75 / v1.50 加"进行中"）。
  *
- * 关键断言（issue 的验收 3/4/5 与补充里的暂停断言）：
+ * 关键断言（issue #75 / #77 的验收 1–3 与补充里的暂停断言）：
  * - 态由绝对时间戳判定，冷启动 / 锁屏回来结果一致；
+ * - 进行中：有开始时刻且未结束，秒数按时间戳续；超 2 小时自动回待开始；
  * - 暂停 → 数字冻住；继续 → **从暂停那一刻的剩余接着走**（不是重启、不是归零）；
  * - 跳过 = 终止（不是重来）。
  */
 
 import { describe, expect, it } from "vitest";
 import {
+  DOING_TIMEOUT_MS,
+  doingElapsedSec,
   pauseRest,
   restRemainingSec,
   resumeRest,
   sessionPhase,
+  startDoing,
   stopRest,
   type RestState,
 } from "@/lib/session-rest";
 
 const NOW = 1_700_000_000_000; // 固定"现在"，避免依赖真实时钟
 
-describe("两态判定（sessionPhase）", () => {
+describe("三态判定（sessionPhase）", () => {
   it("没有倒计时 → 记组态", () => {
     expect(sessionPhase({ restEnd: null, restRemainMs: null }, NOW)).toBe("record");
     expect(sessionPhase({}, NOW)).toBe("record");
@@ -82,8 +86,45 @@ describe("暂停 / 继续（FR-42 + issue #33 补充）", () => {
     });
   });
 
-  it("跳过 = 终止（不是重启）：两个字段都清掉（验收 2）", () => {
-    expect(stopRest()).toEqual({ restEnd: null, restRemainMs: null });
-    expect(sessionPhase(stopRest(), NOW)).toBe("record");
+  it("跳过 = 终止（不是重启）：字段都清掉（验收 2）", () => {
+    expect(stopRest()).toEqual({ restEnd: null, restRemainMs: null, setStartedAt: null });
+    const afterSkip = { ...stopRest() };
+    expect(sessionPhase(afterSkip, NOW)).toBe("record");
+    expect(doingElapsedSec(afterSkip, NOW)).toBe(0);
+  });
+});
+
+describe("进行中态（issue #75 / v1.50）", () => {
+  it("点【开始这组】= 记下绝对开始时刻 → 进行中态，不出现倒计时", () => {
+    const state: RestState = { restEnd: null, restRemainMs: null, ...startDoing(NOW) };
+    expect(sessionPhase(state, NOW)).toBe("doing");
+    expect(sessionPhase(state, NOW + 5_000)).toBe("doing");
+    expect(restRemainingSec(state, NOW + 5_000)).toBe(0); // 进行中不是倒计时
+  });
+
+  it("锁屏 3 分钟回来：秒数按时间戳续（≈180s），不归零、不重置（验收 2）", () => {
+    const state = { ...startDoing(NOW) };
+    expect(doingElapsedSec(state, NOW + 180_000)).toBe(180);
+    expect(sessionPhase(state, NOW + 180_000)).toBe("doing");
+    // 时钟回拨（now 早于开始）不显示负数，按待开始兜底
+    expect(doingElapsedSec(state, NOW - 1_000)).toBe(0);
+    expect(sessionPhase(state, NOW - 1_000)).toBe("record");
+  });
+
+  it("没有开始时刻 = 待开始（老 localStorage 里没有这个字段）", () => {
+    expect(sessionPhase({}, NOW)).toBe("record");
+    expect(sessionPhase({ restEnd: null, restRemainMs: null }, NOW)).toBe("record");
+    expect(doingElapsedSec({}, NOW)).toBe(0);
+  });
+
+  it("挂太久（> 2 小时）= 僵尸态：自动回待开始，这一组不落库（需求 2 的异常收口）", () => {
+    const state = { ...startDoing(NOW) };
+    expect(sessionPhase(state, NOW + DOING_TIMEOUT_MS - 1)).toBe("doing");
+    expect(sessionPhase(state, NOW + DOING_TIMEOUT_MS)).toBe("record");
+  });
+
+  it("休息态优先于进行中（两个字段同时有值时的兜底顺序）", () => {
+    const state: RestState = { restEnd: NOW + 10_000, restRemainMs: null, setStartedAt: NOW - 5_000 };
+    expect(sessionPhase(state, NOW)).toBe("rest");
   });
 });

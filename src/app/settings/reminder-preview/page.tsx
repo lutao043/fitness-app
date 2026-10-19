@@ -25,7 +25,13 @@ interface Step {
 interface PreviewPayload {
   date: string;
   at: string;
+  /** 当天生效的提醒时间（按日期态取档，13.21） */
   checkTime: string;
+  /** 当天日期态（v1.49 / 13.21）：workday / makeup / weekend / holiday */
+  dateKind: "workday" | "makeup" | "weekend" | "holiday";
+  /** 两档原值 */
+  reminderTime: string;
+  reminderTimeRestday: string;
   decision: {
     verdict: "silent" | "send";
     reason: string;
@@ -53,6 +59,8 @@ interface PreviewPayload {
     doseText: string;
     times: string[];
     takenToday: boolean;
+    dayKind: "daily" | "workday" | "restday";
+    appliesToday: boolean;
     verdict: { due: boolean; dueTime: string | null; reason: string };
   }[];
 }
@@ -79,15 +87,33 @@ const SUPPLEMENT_REASON: Record<string, string> = {
   not_yet: "还没到点",
   already_sent: "已经发过（去重命中）",
   due: "到点该提",
+  off_day: "今天不适用",
+};
+
+const DATE_KIND_TEXT: Record<string, string> = {
+  workday: "工作日",
+  makeup: "调休上班日",
+  weekend: "周末",
+  holiday: "法定节假日",
+};
+
+const SUPPLEMENT_DAY_KIND_TEXT: Record<string, string> = {
+  workday: "仅工作日",
+  restday: "仅休息日",
 };
 
 export default function ReminderPreviewPage() {
   const router = useRouter();
   const [at, setAt] = useState("22:30");
+  /** 演练哪一天（v1.49：四种日期态各跑一遍用）；空 = 今天（走服务端默认） */
+  const [date, setDate] = useState("");
 
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ["reminders", "preview", at],
-    queryFn: () => api.get<PreviewPayload>(`/api/v1/reminders/preview?at=${encodeURIComponent(at)}`),
+    queryKey: ["reminders", "preview", at, date],
+    queryFn: () =>
+      api.get<PreviewPayload>(
+        `/api/v1/reminders/preview?at=${encodeURIComponent(at)}${date ? `&date=${encodeURIComponent(date)}` : ""}`,
+      ),
   });
 
   return (
@@ -106,8 +132,16 @@ export default function ReminderPreviewPage() {
         {/* 窄屏（390 / 320px）别把按钮字挤成竖排（issue #12 的同类炸点）：允许换行，不压按钮宽度 */}
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <input
+            type="date"
+            className="input h-10 w-40 py-1 text-center text-[14px]"
+            aria-label="演练日期"
+            value={date || (data?.date ?? "")}
+            onChange={(e) => setDate(e.target.value)}
+          />
+          <input
             type="time"
             className="input h-10 w-32 py-1 text-center text-[15px]"
+            aria-label="演练时刻"
             value={at}
             onChange={(e) => e.target.value && setAt(e.target.value)}
           />
@@ -119,9 +153,20 @@ export default function ReminderPreviewPage() {
             className="btn btn-secondary min-h-[38px] px-3 text-[12.5px]"
             onClick={() => setAt(data?.checkTime ?? "22:30")}
           >
-            提醒时间 {data?.checkTime ?? ""}
+            今天生效 {data?.checkTime ?? ""}
           </button>
         </div>
+        {/* 日期态（v1.49 / 13.21）：看不出"为什么今天这个时间发"就白演练了 */}
+        {data && (
+          <div className="mt-2 text-[12.5px] leading-relaxed">
+            {data.date} 是 <span className="font-semibold">{DATE_KIND_TEXT[data.dateKind] ?? data.dateKind}</span> ·
+            用{data.dateKind === "workday" || data.dateKind === "makeup" ? "工作日档" : "休息日档"}{" "}
+            <span className="font-semibold">{data.checkTime}</span>
+            <span className="muted">
+              （工作日档 {data.reminderTime} / 休息日档 {data.reminderTimeRestday}；调休上班日按工作日档）
+            </span>
+          </div>
+        )}
         <div className="mt-2 flex flex-wrap gap-1.5">
           {["21:00", "22:00", "22:29", "22:30", "23:00", "23:59"].map((t) => (
             <button
@@ -192,6 +237,7 @@ export default function ReminderPreviewPage() {
             <div className="text-[13px] font-semibold">判定输入（这就是为什么是这个结论）</div>
             <div className="mt-2 space-y-1 text-[12.5px]">
               <Row label="今天该练" value={data.input.isRestSlot ? "休" : data.input.partLabel || "—"} />
+              <Row label="日期态" value={DATE_KIND_TEXT[data.dateKind] ?? data.dateKind} />
               <Row label="明天该练" value={data.input.nextPartLabel || "—"} />
               <Row label="法定节假日" value={data.input.holidayName ?? "不是"} />
               <Row label="训练记录（含 doing）" value={data.input.hasTrainingRecord ? "有" : "没有"} />
@@ -213,6 +259,9 @@ export default function ReminderPreviewPage() {
                     <span className="min-w-0">
                       <span className="font-medium">{s.name}</span>
                       <span className="muted ml-1.5">{s.times.join(" / ")}</span>
+                      {s.dayKind !== "daily" && (
+                        <span className="muted ml-1.5">· {SUPPLEMENT_DAY_KIND_TEXT[s.dayKind]}</span>
+                      )}
                     </span>
                     <span className="shrink-0">
                       <Pill tone={s.verdict.due ? "accent" : "plain"}>

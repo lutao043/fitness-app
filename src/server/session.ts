@@ -47,6 +47,11 @@ export interface WriteSetInput {
   reps?: number | null;
   durationSec?: number | null;
   variantId?: number | null;
+  /**
+   * 本组**开始**时刻（FR-9 v1.50 / issue #75）：组间歇 = 上一组完成 → 本组开始。
+   * 缺省 = null（忘点开始）→ 这一组 `rest_before_sec` 写 null，不退回"完成 − 完成"的旧算法。
+   */
+  startedAt?: string | null;
   doneAt: string;
   /** 上一组完成到本组开始之间累计的暂停毫秒（FR-42：只在一处扣） */
   pausedMsSincePrev?: number;
@@ -155,12 +160,15 @@ export function writeSet(
     .get();
 
   const prevDoneAt = prev?.doneAt ? Date.parse(prev.doneAt) : null;
-  const nowTs = Date.parse(input.doneAt);
+  // 组间歇的"本组开始"取 started_at（13.5 / v1.50）：以前这里传的是 done_at（本组完成），
+  // 把本组自身的做组耗时算进了休息 —— 均值系统性偏大（issue #75 的线上证据）。
+  const startedTs = input.startedAt ? Date.parse(input.startedAt) : null;
   const rest = input.backfill
     ? { restBeforeSec: null, sameExercise: false } // 补录：没有真实间隔，不编（13.5 v1.18）
     : restBeforeSec({
         prevDoneAt: prevDoneAt !== null && Number.isFinite(prevDoneAt) ? prevDoneAt : null,
-        now: Number.isFinite(nowTs) ? nowTs : Date.now(),
+        // 没点过【开始这组】（started_at 缺失 / 不可解析）= 没有真实间隔 → null（13.5 v1.50）
+        startedAt: startedTs !== null && Number.isFinite(startedTs) ? startedTs : null,
         pausedMsBetween: input.pausedMsSincePrev ?? 0,
         prev: prev ? { exercise: String(prev.exerciseId), variantId: prev.variantId === null ? null : String(prev.variantId) } : null,
         current: {
@@ -179,6 +187,7 @@ export function writeSet(
     durationSec: input.durationSec ?? null,
     variantId: input.variantId ?? null,
     totalLoadKg: total,
+    startedAt: input.startedAt ?? null,
     restBeforeSec: rest.restBeforeSec,
     sameExercise: rest.sameExercise,
     doneAt: input.doneAt,

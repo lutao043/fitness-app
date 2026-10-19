@@ -24,6 +24,13 @@ const nextConfig: NextConfig = {
     // lint 由 `pnpm check`（eslint .）统一跑，构建时不重复跑一遍
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    // 类型检查同理交给 `pnpm check`（tsc --noEmit）—— 构建只负责产出 standalone 产物。
+    // 依据：CI（test.yml）与发版（deploy.yml 的"测试门禁（不过不发）"）都在 `pnpm build` **之前**
+    // 先跑门禁，同一份代码不会被跳过检查；而 `next build` 里这一步在本仓要 ~14s（约构建时间的 1/6），
+    // 每次 CI 构建都要付两遍（门禁一遍 + 构建里一遍）。
+    ignoreBuildErrors: true,
+  },
   // 开发时手机通过局域网 IP / 127.0.0.1 访问会被 Next 当成跨域来源（只影响 dev 提示）
   allowedDevOrigins: ["127.0.0.1", "localhost", "*.local"],
   // 全中文界面（NFR-3），React 自带的开发提示保留即可

@@ -1,5 +1,5 @@
 /**
- * PATCH  /api/v1/supplements/{id} —— 改补剂（名称 / 时点 / 剂量 / 启用；`{move:"up"|"down"}` 调顺序）
+ * PATCH  /api/v1/supplements/{id} —— 改补剂（名称 / 时点 / 剂量 / 启用 / 适用日（v1.49）；`{move:"up"|"down"}` 调顺序）
  * DELETE /api/v1/supplements/{id} —— 删补剂（顺手清掉今天及以后尚未投递的补剂提醒事件）
  *
  * 改完立即生效（FR-40 同源）：提醒 tick 每次读的就是这张表，没有缓存。
@@ -47,6 +47,7 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
     times: updated?.times ?? [],
     doseText: updated?.doseText,
     enabled: !!updated?.enabled,
+    dayKind: updated?.dayKind,
   });
 }
 

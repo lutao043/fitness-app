@@ -116,6 +116,7 @@ async function pushSet(
     setNo: number;
     weightKg?: number;
     reps?: number;
+    startedAt?: string;
     doneAt: string;
     feel?: string;
     backfill?: boolean;
@@ -129,6 +130,7 @@ async function pushSet(
       set_no: body.setNo,
       weight_kg: body.weightKg,
       reps: body.reps,
+      ...(body.startedAt ? { started_at: body.startedAt } : {}),
       done_at: body.doneAt,
       ...(body.feel ? { feel: body.feel } : {}),
       ...(body.backfill ? { backfill: true } : {}),
@@ -276,7 +278,9 @@ describe("补明细：补录的组不记组间歇，补完立刻重算小结", (
       setNo: 2,
       weightKg: 20,
       reps: 10,
-      doneAt: "2026-09-19T10:10:00+08:00",
+      // 组间歇 = 上一组完成(10:00:00) → 本组开始(10:10:00) = 600 秒（FR-9 v1.50）
+      startedAt: "2026-09-19T10:10:00+08:00",
+      doneAt: "2026-09-19T10:10:40+08:00",
     });
     expect((await jsonOf<{ restBeforeSec: number | null }>(second)).restBeforeSec).toBe(600);
 

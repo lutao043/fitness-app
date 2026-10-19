@@ -154,7 +154,7 @@ function BodyPageInner() {
   const morningAll = series.filter((s) => s.slot === "morning");
   const latestMorning = morningAll.at(-1) ?? null;
   const startMorning = morningAll[0] ?? null;
-  const target = data?.target ?? 65;
+  const target = data?.target ?? 70;
   const remain =
     latestMorning !== null ? Math.round((latestMorning.weightKg - target) * 10) / 10 : null;
   const remainDisplay = remain === null ? null : kgToDisplay(remain, unit);

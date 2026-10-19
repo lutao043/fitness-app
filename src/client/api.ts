@@ -212,6 +212,8 @@ export interface SessionDetail {
     reps: number | null;
     durationSec: number | null;
     totalLoadKg: number | null;
+    /** 本组开始时刻（v1.50 / issue #75）；老数据 / 忘点开始为 null */
+    startedAt: string | null;
     restBeforeSec: number | null;
     sameExercise: boolean;
     doneAt: string;
@@ -282,7 +284,10 @@ export interface MeasurementRow {
 
 export interface SettingsPayload {
   unit: "kg" | "lb";
+  /** 训练提醒：工作日档（工作日 + 调休上班日） */
   reminderTime: string;
+  /** 训练提醒：休息日档（周末 + 法定节假日；默认与工作日档同值 = 分档前行为，v1.49） */
+  reminderTimeRestday: string;
   workoutReminderOn: boolean;
   restDefaultSec: number;
   holidays: { updatedAt: string | null; source: string | null };
@@ -381,6 +386,8 @@ export interface SupplementRow {
   doseText: string;
   orderNo: number;
   enabled: boolean;
+  /** 适用日（v1.49 / 13.21）：daily = 每天（默认，= 分档前行为）；只作用于提醒 */
+  dayKind: "daily" | "workday" | "restday";
 }
 
 export interface ReanchorProposal {

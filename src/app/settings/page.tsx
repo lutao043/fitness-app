@@ -20,6 +20,7 @@ import { OvertimeEditor, type OvertimeDraft } from "@/components/overtime-editor
 import { useToast } from "@/components/toast";
 import { Card, Divider, Pill, Row, SectionTitle, Sheet } from "@/components/ui";
 import { OVERTIME_QUICK_TIMES, overtimeDateLabel } from "@/lib/overtime";
+import { supplementDayKindLabel } from "@/lib/reminder/date-kind";
 import { dateInTz } from "@/lib/time";
 
 interface SupplementForm {
@@ -28,6 +29,8 @@ interface SupplementForm {
   times: string[];
   doseText: string;
   enabled: boolean;
+  /** 适用日（v1.49 / 13.21）：daily 默认 = 每天（= 分档前行为） */
+  dayKind: "daily" | "workday" | "restday";
 }
 
 const COMMON_TIMES = ["08:30", "09:30", "12:10", "13:30", "18:30", "22:30"];
@@ -39,6 +42,8 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [password, setPassword] = useState("");
   const [reminderTime, setReminderTime] = useState<string | null>(null);
+  /** 休息日档的待提交值（v1.49 / 13.21：周末 + 法定节假日走它） */
+  const [reminderTimeRestday, setReminderTimeRestday] = useState<string | null>(null);
   const [supplementForm, setSupplementForm] = useState<SupplementForm | null>(null);
   const [cheatInterval, setCheatInterval] = useState<number | null>(null);
   /** 加班面板（FR-22 / §12.1：补录历史、录明天、改，与今日页共用同一个面板） */
@@ -163,6 +168,7 @@ export default function SettingsPage() {
         times: payload.times,
         dose_text: payload.doseText,
         enabled: payload.enabled,
+        dayKind: payload.dayKind,
       };
       return payload.id === null
         ? api.post("/api/v1/supplements", body)
@@ -281,10 +287,11 @@ export default function SettingsPage() {
         />
         <Divider />
         <div className="flex items-center justify-between gap-3">
-          <span className="text-sm">提醒时间</span>
+          <span className="text-sm">提醒时间 · 工作日</span>
           <input
             className="input h-10 w-28 py-1 text-center"
             type="time"
+            aria-label="提醒时间 · 工作日"
             value={reminderTime ?? settings?.reminderTime ?? "22:30"}
             onChange={(e) => setReminderTime(e.target.value)}
             onBlur={() => {
@@ -295,8 +302,25 @@ export default function SettingsPage() {
             }}
           />
         </div>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <span className="text-sm">提醒时间 · 周末 / 假期</span>
+          <input
+            className="input h-10 w-28 py-1 text-center"
+            type="time"
+            aria-label="提醒时间 · 周末 / 假期"
+            value={reminderTimeRestday ?? settings?.reminderTimeRestday ?? "22:30"}
+            onChange={(e) => setReminderTimeRestday(e.target.value)}
+            onBlur={() => {
+              if (reminderTimeRestday && reminderTimeRestday !== settings?.reminderTimeRestday) {
+                patchSettings.mutate({ reminderTimeRestday });
+                setReminderTimeRestday(null);
+              }
+            }}
+          />
+        </div>
         <p className="muted mt-2 text-[11.5px]">
-          加班判据固定 22:30，不跟着这个时间拨（训练 21:00 结束 + 回家洗澡）
+          调休上班日按工作日档；法定节假日与循环位「休」本来就不发训练提醒（想在演练里看今天是哪种态，去下面「提醒预览」）。
+          加班判据固定 22:30，不跟着这两档拨（训练 21:00 结束 + 回家洗澡）。
         </p>
         <Divider />
         {/* FR-55：判定演练 —— 只读，不写任何事件 / 投递记录 */}
@@ -332,6 +356,7 @@ export default function SettingsPage() {
                       times: s.times,
                       doseText: s.doseText,
                       enabled: s.enabled,
+                      dayKind: s.dayKind,
                     })
                   }
                 >
@@ -341,6 +366,7 @@ export default function SettingsPage() {
                   </span>
                   <span className="muted block truncate text-[11px]">
                     {s.times.length > 0 ? s.times.join(" / ") : "未设时点"}
+                    {s.dayKind !== "daily" ? ` · ${supplementDayKindLabel(s.dayKind)}` : ""}
                     {s.doseText ? ` · ${s.doseText}` : ""}
                   </span>
                 </button>
@@ -396,7 +422,7 @@ export default function SettingsPage() {
         <button
           className="btn btn-secondary btn-block mt-3"
           onClick={() =>
-            setSupplementForm({ id: null, name: "", times: [], doseText: "", enabled: true })
+            setSupplementForm({ id: null, name: "", times: [], doseText: "", enabled: true, dayKind: "daily" })
           }
         >
           + 加一种补剂
@@ -811,6 +837,26 @@ export default function SettingsPage() {
             </div>
             <p className="muted mt-1.5 text-[11px]">
               当前：{supplementForm.times.length > 0 ? supplementForm.times.join(" / ") : "未设时点（不会提醒）"}
+            </p>
+            {/* 适用日（v1.49 / 13.21）：只影响提醒；调休上班日算工作日；默认每天 = 分档前行为 */}
+            <div className="muted mt-3 mb-1.5 text-[12px]">适用日（只影响提醒，打卡不受限）</div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {(["daily", "workday", "restday"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  aria-pressed={supplementForm.dayKind === k}
+                  className={`tap rounded-lg border px-2.5 text-[12.5px] ${
+                    supplementForm.dayKind === k ? "border-accent bg-accent-soft font-semibold" : "border-border"
+                  }`}
+                  onClick={() => setSupplementForm({ ...supplementForm, dayKind: k })}
+                >
+                  {supplementDayKindLabel(k)}
+                </button>
+              ))}
+            </div>
+            <p className="muted mt-1.5 text-[11px]">
+              「仅工作日」在调休上班日照发、「仅休息日」在周末与法定节假日发；不设 = 每天（和以前一样）
             </p>
             <label className="muted mt-3 block text-[12px]">剂量文案（如「1 粒 · 早餐随餐」）</label>
             <input

@@ -1,0 +1,1 @@
+ALTER TABLE `supplement` ADD `day_kind` text DEFAULT 'daily' NOT NULL;

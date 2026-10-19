@@ -26,7 +26,7 @@ pnpm dev                    # http://localhost:3210 → 首次打开会引导设
 ```
 
 数据落在 `./data/fitness.sqlite`；删掉它并重启就是全新安装。
-`pnpm check` 是质量门禁（typecheck + lint + 500 个单测）。
+`pnpm check` 是质量门禁（typecheck + lint + 549 个单测）。
 
 ## 部署
 

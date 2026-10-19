@@ -107,6 +107,13 @@ describe("换动作（搬组不丢组间歇）", () => {
       "2026-10-09T09:12:32.000Z",
       "2026-10-09T09:16:46.000Z",
     ];
+    // 本组开始时刻（FR-9 v1.50）：第 2 组起各给一个开始时刻，组间歇才是真的（第一组没有间隔）
+    const startedAt = [
+      null,
+      "2026-10-09T09:07:37.000Z",
+      "2026-10-09T09:12:02.000Z",
+      "2026-10-09T09:16:16.000Z",
+    ];
     for (let i = 0; i < 4; i++) {
       const res = await setPOST(
         req("POST", `/api/v1/sessions/${sessionId}/sets`, {
@@ -115,6 +122,7 @@ describe("换动作（搬组不丢组间歇）", () => {
           set_no: i + 1,
           weight_kg: 20,
           reps: 12,
+          ...(startedAt[i] ? { started_at: startedAt[i] } : {}),
           done_at: doneAt[i],
         }),
         params({ id: String(sessionId) }),

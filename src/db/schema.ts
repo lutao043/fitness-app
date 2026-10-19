@@ -21,6 +21,7 @@ import {
 } from "drizzle-orm/sqlite-core";
 import type { ExerciseType, LoadMode, LoadSemantics } from "@/lib/exercise/types";
 import type { WeightUnit } from "@/lib/units";
+import type { SupplementDayKind } from "@/lib/reminder/date-kind";
 
 const now = sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`;
 
@@ -300,6 +301,12 @@ export const setLog = sqliteTable(
     variantId: integer("variant_id").references(() => exerciseVariant.id, { onDelete: "set null" }),
     /** 按 loadMode / loadSemantics 折算的总重；不计容量时为 null */
     totalLoadKg: real("total_load_kg"),
+    /**
+     * 本组**开始**时刻（FR-9 v1.50 / issue #75）：记组卡「开始这组」那一下的墙上时间。
+     * 组间歇 = 上一组 `done_at` → 本组 `started_at`（13.5）；老数据与忘点开始的组为 null
+     * —— **不回算、不退回旧口径**，这时这一组的 `rest_before_sec` 直接写 null。
+     */
+    startedAt: text("started_at"),
     /** 自动记录的组间歇（上一组完成 → 本组开始），第一组为 null */
     restBeforeSec: integer("rest_before_sec"),
     /** 上一组是不是同动作 + 同变体（13.5） */
@@ -386,7 +393,7 @@ export const cardioLog = sqliteTable(
   (t) => [uniqueIndex("cardio_log_date").on(t.date)],
 );
 
-/** 补剂清单：完全可增删改（名称 / 时点 / 剂量 / 排序 / 启用） */
+/** 补剂清单：完全可增删改（名称 / 时点 / 剂量 / 排序 / 启用 / 适用日） */
 export const supplement = sqliteTable("supplement", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
@@ -395,6 +402,8 @@ export const supplement = sqliteTable("supplement", {
   doseText: text("dose_text").notNull().default(""),
   orderNo: integer("order_no").notNull().default(0),
   enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+  /** 适用日（v1.49 / 需求书 13.21）：daily = 每天（默认，= 分档前行为）；只作用于提醒，打卡入口不受限 */
+  dayKind: text("day_kind").$type<SupplementDayKind>().notNull().default("daily"),
 });
 
 export const cheatSetting = sqliteTable("cheat_setting", {

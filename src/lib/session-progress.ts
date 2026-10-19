@@ -41,16 +41,38 @@ export function shouldFinish(
   return exercises.every((e) => e.doneSets >= e.targetSets);
 }
 
-/** 「完成一组」按钮的文案：做满 / 落库中 / 刚落库 / 可点 */
-export function completeSetLabel(input: {
+/**
+ * 一组落库成功后该进哪一态（FR-12 v1.50 / issue #77）：
+ * **已无待做动作 → 直接进收工态（不再起休息倒计时）**；否则照旧起倒计时。
+ *
+ * 三条约束（都在验收里）：
+ * - 判定必须用**落库之后**的进度（服务端数据，`created: false` 的幂等重放也算），
+ *   不许在点按钮前预判 —— 网络失败时预判会出现"以为做完就收工"的假收工；
+ * - 「再练一组」（issue #39）加练的那组记完 → 同一判据直接回收工态（不再倒计时）；
+ * - 中途做满某个动作、清单里还有别的动作 → 照旧倒计时（反例不回归）。
+ */
+export function phaseAfterSet(
+  exercises: readonly { doneSets: number; targetSets: number }[],
+  opts: { extraSet?: boolean } = {},
+): "finish" | "rest" {
+  return shouldFinish(exercises, opts) ? "finish" : "rest";
+}
+
+/**
+ * 记组卡主按钮的文案（v1.50 三态：待开始 / 进行中 + 落库中 / 刚落库窗口）。
+ * 「做满」只在待开始态出现（进行中说明这一组已经在做了，做满与否由上一次判定管）。
+ */
+export function setButtonLabel(input: {
+  phase: "record" | "doing";
   exerciseDone: boolean;
   pending: boolean;
   justRecorded: boolean;
 }): string {
-  if (input.exerciseDone) return "本动作已做满 · 可以收工了";
-  if (input.pending) return "记下中…";
   if (input.justRecorded) return "已记下 ✓";
-  return "✓ 完成一组";
+  if (input.pending) return "记下中…";
+  if (input.phase === "doing") return "✓ 结束这组";
+  if (input.exerciseDone) return "本动作已做满 · 可以收工了";
+  return "▶ 开始这组";
 }
 
 /**

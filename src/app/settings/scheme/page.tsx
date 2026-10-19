@@ -474,19 +474,25 @@ export default function SchemeRulesPage() {
                   {(draft ?? []).length === 0 && <Empty>这套清单还是空的 · 点下面加动作</Empty>}
                   <div className="space-y-1.5">
                     {(draft ?? []).map((row, index) => (
-                      <div key={row.exerciseId} className="flex items-center justify-between gap-2 rounded-xl border border-border px-2.5 py-1.5">
+                      /* 动作行：名称/参数独占一行，控件组整体换行（issue #69 / 第 12 章第 39 条）。
+                         右列控件固定 308px（Stepper 116×2 + ▲▼ 32×2 + gap），超过 390px 下的行内容宽 286px，
+                         `nowrap + 左列只 min-w-0 + 右列 shrink-0` 会把动作名压成一字一行；不许缩小点区（第 38 条 ≥32px）。 */
+                      <div
+                        key={row.exerciseId}
+                        className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 rounded-xl border border-border px-2.5 py-1.5"
+                      >
                         <button
                           type="button"
-                          className="min-w-0 flex-1 text-left"
+                          className="min-w-0 grow basis-full text-left"
                           onClick={() => patchDraft((rows) => rows.filter((r) => r.exerciseId !== row.exerciseId))}
                         >
                           <span className="block truncate text-[13.5px]">{row.name}</span>
-                          <span className="muted text-[11px]">
+                          <span className="muted text-[11px] whitespace-nowrap">
                             {row.targetSets} × {row.targetReps}
                             {row.type === "time" ? " 秒" : " 次"} · 点名称移除
                           </span>
                         </button>
-                        <div className="flex shrink-0 items-center gap-1">
+                        <div className="flex flex-wrap items-center justify-end gap-1">
                           <Stepper
                             label="组"
                             value={row.targetSets}
@@ -509,22 +515,25 @@ export default function SchemeRulesPage() {
                               )
                             }
                           />
-                          <button
-                            type="button"
-                            aria-label={`把 ${row.name} 往上挪`}
-                            className="grid h-8 w-8 place-items-center rounded-lg border border-border"
-                            onClick={() => moveDraft(index, -1)}
-                          >
-                            ▲
-                          </button>
-                          <button
-                            type="button"
-                            aria-label={`把 ${row.name} 往下挪`}
-                            className="grid h-8 w-8 place-items-center rounded-lg border border-border"
-                            onClick={() => moveDraft(index, 1)}
-                          >
-                            ▼
-                          </button>
+                          {/* ▲▼ 成一小组：换行时两个箭头一起落到下一行，不拆开 */}
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              aria-label={`把 ${row.name} 往上挪`}
+                              className="grid h-8 w-8 place-items-center rounded-lg border border-border"
+                              onClick={() => moveDraft(index, -1)}
+                            >
+                              ▲
+                            </button>
+                            <button
+                              type="button"
+                              aria-label={`把 ${row.name} 往下挪`}
+                              className="grid h-8 w-8 place-items-center rounded-lg border border-border"
+                              onClick={() => moveDraft(index, 1)}
+                            >
+                              ▼
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}

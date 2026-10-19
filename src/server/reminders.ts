@@ -26,6 +26,7 @@ import {
   reminderEventExists,
   remindersEnabled,
   reminderTime,
+  reminderTimeRestday,
   supplementsFor,
   todayFacts,
   type ScheduleState,
@@ -46,6 +47,7 @@ import {
   type ReminderReason,
 } from "@/lib/reminder/decide";
 import { decideSupplement, supplementRefKey } from "@/lib/reminder/supplements";
+import { dateKind, dayKindApplies, reminderTimeForKind, type DateKind } from "@/lib/reminder/date-kind";
 import { holidayGapDue, holidayGapNotice, holidayGapRefKey } from "@/lib/reminder/holiday-gap";
 import { cheatRefKey, reanchorRefKey, type ReminderChannel, type ReminderEventType } from "@/lib/reminder/dedup";
 import { reanchorAskSuppressed } from "@/lib/reminder/reanchor";
@@ -68,6 +70,20 @@ export interface ReminderEventPayload {
   coverageEnd?: DateStr | null;
 }
 
+/* ———————————————— 日期态与生效提醒时刻（13.21 / v1.49） ———————————————— */
+
+/** 当天日期态（纯函数唯一一份判定）：演练页 / 页面预告 / tick / due 共用 */
+export function dayKindOf(facts: TodayFacts, date: DateStr): DateKind {
+  return dateKind(date, facts.holiday?.type ?? null);
+}
+
+/** 训练提醒的生效时刻与两档原值（tick 的生成闸门、beforeCheckTime 标注、演练页展示共用） */
+export function reminderTimeView(db: Db, kind: DateKind): { workday: TimeStr; restday: TimeStr; effective: TimeStr } {
+  const workday = reminderTime(db);
+  const restday = reminderTimeRestday(db);
+  return { workday, restday, effective: reminderTimeForKind(kind, { workday, restday }) };
+}
+
 /* ———————————————— 判定输入的组装（今日页预告 / tick / due 三处共用） ———————————————— */
 
 export interface ReminderInputBundle {
@@ -81,6 +97,8 @@ export interface ReminderInputBundle {
 /**
  * 从库里拼出 13.10 判定表的输入。today.ts 的预告与定时任务共用这一份，
  * 改这里两处同时生效 —— 不给"页面说不会催、实际催了"留缝隙。
+ * `checkTime` = **当日生效时刻**（按日期态取档，13.21）：工作日 / 调休上班日走工作日档，
+ * 周末 / 法定节假日走休息日档。
  */
 export function buildReminderInput(db: Db, bundle: ReminderInputBundle): ReminderInput {
   const { state, facts, today, at, nowTs } = bundle;
@@ -106,7 +124,7 @@ export function buildReminderInput(db: Db, bundle: ReminderInputBundle): Reminde
     hasWorkoutCheckin: facts.workoutCheckin,
     overtimeStart: facts.overtimeEarliest?.start ?? null,
     remindersEnabled: remindersEnabled(db),
-    checkTime: reminderTime(db),
+    checkTime: reminderTimeView(db, dayKindOf(facts, today)).effective,
     at,
   };
 }
@@ -135,6 +153,8 @@ export function runReminderTick(db: Db, nowTs: number = Date.now()): ReminderTic
   const at = timeInTz(new Date(nowTs));
   const state = loadScheduleState(db, today);
   const facts = todayFacts(db, today);
+  /** 当天日期态（13.21）：训练提醒取档、补剂适用日都按它判 */
+  const kind = dayKindOf(facts, today);
   const generated: GeneratedEvent[] = [];
 
   const emit = (
@@ -152,8 +172,8 @@ export function runReminderTick(db: Db, nowTs: number = Date.now()): ReminderTic
     }
   };
 
-  // ① 训练提醒（13.10 判定表）：到判定时刻才生成，练了就静默
-  if (hhmmToMinutes(at) >= hhmmToMinutes(reminderTime(db))) {
+  // ① 训练提醒（13.10 判定表）：到**当日生效时刻**（按日期态取档，13.21）才生成，练了就静默
+  if (hhmmToMinutes(at) >= hhmmToMinutes(reminderTimeView(db, kind).effective)) {
     const decision = decideReminder(buildReminderInput(db, { state, facts, today, at, nowTs }));
     if (decision.verdict === "send") {
       emit("workout", decision.refKey, {
@@ -168,7 +188,7 @@ export function runReminderTick(db: Db, nowTs: number = Date.now()): ReminderTic
     }
   }
 
-  // ② 补剂（13.10 第 2 条，并列分支）：到点、没打卡、当天没生成过才提（FR-33）
+  // ② 补剂（13.10 第 2 条，并列分支）：**适用日成立**（13.21）且到点、没打卡、当天没生成过才提（FR-33）
   for (const s of supplementsFor(db, today)) {
     const refKey = supplementRefKey(s.id);
     const verdict = decideSupplement({
@@ -178,6 +198,7 @@ export function runReminderTick(db: Db, nowTs: number = Date.now()): ReminderTic
       takenToday: s.takenToday,
       eventAlreadyGenerated: reminderEventExists(db, "supplement", refKey, today),
       at,
+      appliesToday: dayKindApplies(s.dayKind, kind),
     });
     if (verdict.due) {
       emit("supplement", refKey, {
@@ -285,8 +306,13 @@ export function dueReminders(
   const facts = todayFacts(db, today);
   const nowTs2 = Date.now();
 
-  // 补剂当前的打卡状态（生成事件之后他才打卡 → 复核时要从 due 里摘掉）
-  const takenBySupplement = new Map(supplementsFor(db, today).map((s) => [String(s.id), s.takenToday]));
+  // 补剂当前的打卡状态与适用日（生成事件之后他才打卡 / 当天把适用日改掉 → 复核时要从 due 里摘掉）
+  const supplementToday = supplementsFor(db, today);
+  const takenBySupplement = new Map(supplementToday.map((s) => [String(s.id), s.takenToday]));
+  const kindToday = dayKindOf(facts, today);
+  const appliesBySupplement = new Map(
+    supplementToday.map((s) => [String(s.id), dayKindApplies(s.dayKind, kindToday)]),
+  );
   const pendingProposal = pendingAnchorProposal(db);
   const missed = trainingDaysMissed(today, state.ctx, state.slots, lastActivityDate(db, today));
   const reanchorGateHolds =
@@ -325,7 +351,10 @@ export function dueReminders(
         break;
       }
       case "supplement":
-        applies = takenBySupplement.get(event.refKey.replace(/^supp:/, "")) === false;
+        // 复核两条：还没打卡、且这条补剂的适用日在今天仍成立（13.21）
+        applies =
+          takenBySupplement.get(event.refKey.replace(/^supp:/, "")) === false &&
+          appliesBySupplement.get(event.refKey.replace(/^supp:/, "")) !== false;
         break;
       case "cheat":
         // 他今天真吃了 → 锚点已挪走、nextDate 不再是今天

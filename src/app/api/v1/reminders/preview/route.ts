@@ -5,17 +5,22 @@
  * 训练提醒的结论（发不发、发什么、一键动作）与每种补剂的到点情况都吐出来，
  * 用来和设备实际行为对拍（10.1 并行期）。
  *
+ * v1.49 / issue #70：同时返回当天的**日期态**（13.21 的四种：工作日 / 调休上班日 / 周末 /
+ * 法定节假日）与**生效的提醒时刻**（按日期态取档）—— 页面把它们显示出来，
+ * 才看得出"为什么今天这个时间发"。
+ *
  * **不生成事件、不写去重与投递记录** —— 演练不能把当天的真投递顶掉（原型那个演练面板会写，
  * 正式版明确不写；要发真提醒等定时 tick 或调 `reminders/due`）。
  */
 
 import { getDb } from "@/db/client";
-import { loadScheduleState, reminderTime, supplementsFor, todayFacts } from "@/db/queries";
+import { loadScheduleState, supplementsFor, todayFacts } from "@/db/queries";
 import { requireApiAuth } from "@/server/auth";
 import { badRequest, json } from "@/server/http";
-import { buildReminderInput } from "@/server/reminders";
+import { buildReminderInput, dayKindOf, reminderTimeView } from "@/server/reminders";
 import { decideReminder } from "@/lib/reminder/decide";
 import { decideSupplement } from "@/lib/reminder/supplements";
+import { dayKindApplies } from "@/lib/reminder/date-kind";
 import { dateInTz, isValidDateStr, isValidTimeStr } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
@@ -31,44 +36,61 @@ export async function GET(request: Request) {
   if (!isValidDateStr(date)) return badRequest("date 不是合法日期（YYYY-MM-DD）", undefined, request);
   if (date > dateInTz()) return badRequest("date 不能是未来的日子", undefined, request);
 
-  // 演练时刻：没给就用配置的提醒时间（"到点会怎样"）
-  const checkTime = reminderTime(db);
+  const state = loadScheduleState(db, date);
+  const facts = todayFacts(db, date);
+  // 日期态（13.21）与两档提醒时间：checkTime = 当天**生效**的那一档
+  const dateKind = dayKindOf(facts, date);
+  const times = reminderTimeView(db, dateKind);
+  const checkTime = times.effective;
+
+  // 演练时刻：没给就用当天生效的提醒时间（"到点会怎样"）
   const rawAt = url.searchParams.get("at") ?? "";
   if (rawAt !== "" && !isValidTimeStr(rawAt)) return badRequest("at 必须是 HH:mm", undefined, request);
   const at = rawAt || checkTime;
 
   const nowTs = Date.parse(`${date}T${at}:00+08:00`);
   const input = buildReminderInput(db, {
-    state: loadScheduleState(db, date),
-    facts: todayFacts(db, date),
+    state,
+    facts,
     today: date,
     at,
     nowTs: Number.isFinite(nowTs) ? nowTs : Date.now(),
   });
   const decision = decideReminder(input);
 
-  const supplements = supplementsFor(db, date).map((s) => ({
-    id: s.id,
-    name: s.name,
-    doseText: s.doseText,
-    times: s.times,
-    takenToday: s.takenToday,
-    verdict: decideSupplement({
-      supplementId: s.id,
+  const supplements = supplementsFor(db, date).map((s) => {
+    const appliesToday = dayKindApplies(s.dayKind, dateKind);
+    return {
+      id: s.id,
       name: s.name,
+      doseText: s.doseText,
       times: s.times,
       takenToday: s.takenToday,
-      // 演练只看"到点该不该提"；真实去重交给定时 tick（这里当还没生成过）
-      eventAlreadyGenerated: false,
-      at,
-    }),
-  }));
+      dayKind: s.dayKind,
+      appliesToday,
+      verdict: decideSupplement({
+        supplementId: s.id,
+        name: s.name,
+        times: s.times,
+        takenToday: s.takenToday,
+        // 演练只看"到点该不该提"；真实去重交给定时 tick（这里当还没生成过）
+        eventAlreadyGenerated: false,
+        at,
+        appliesToday,
+      }),
+    };
+  });
 
   return json({
     date,
     at,
-    /** 配置的提醒时间：判定时刻早于它 → 结论里会标注"还没到判定时刻" */
+    /** 当天日期态（13.21）：工作日 / 调休上班日 / 周末 / 法定节假日 */
+    dateKind,
+    /** 当天**生效**的提醒时间（= 两档里按日期态取的那一档）：判定时刻早于它 → 结论里会标注"还没到判定时刻" */
     checkTime,
+    /** 两档原值（页面显示"今天是哪种态 · 用哪档"） */
+    reminderTime: times.workday,
+    reminderTimeRestday: times.restday,
     decision,
     /** 判定输入（页面自检用：为什么是这个结论，看这里） */
     input,

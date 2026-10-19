@@ -4,10 +4,14 @@
  * 逐组训练（FR-7~FR-12 / FR-41 / FR-42 / FR-43）。
  *
  * 设计要点（都对得上出处）：
- * - 「完成一组」1 次点击，预填上次同动作 + 同变体的重量次数（FR-7）；
+ * - 记组卡**三态**（FR-9 v1.50 / issue #75）：待开始（【开始这组】）→ 进行中（大号本组计时 +【结束这组】）
+ *   → 落库成功才进休息倒计时；点【开始这组】不起倒计时；
  * - 组间歇用**绝对时间戳 rest_end 反算**，不累加（第 9 章第 7 条：锁屏后定时器会被节流）；
+ * - 一组记完、清单里还有待做动作才起倒计时；**最后一组直接进收工态**（FR-12 v1.50 / issue #77），
+ *   判定用落库后的服务端数据，不在点按钮前预判；
  * - 暂停时长只累计到 pausedMs 里、写入时由服务端从两侧扣一次（FR-42 / 13.5）；
- * - 每组落库（服务端算 rest_before_sec 与 same_exercise），切走 / 锁屏 / 杀进程回来都还在（FR-41）；
+ * - 每组落库（服务端按 `started_at` → `done_at` 算 rest_before_sec 与 same_exercise），
+ *   切走 / 锁屏 / 杀进程回来都还在（FR-41）；
  * - 训练中**不做必填校验**，任何一步都能留空直接过（第 12 章第 14 条）。
  */
 
@@ -20,10 +24,19 @@ import { useConfirm } from "@/components/confirm";
 import { useToast } from "@/components/toast";
 import { Card, Divider, Empty, Sheet, Stepper } from "@/components/ui";
 import { setClientKey } from "@/lib/set-key";
-import { pauseRest, restRemainingSec, resumeRest, sessionPhase, stopRest, type SessionPhase } from "@/lib/session-rest";
+import {
+  DOING_TIMEOUT_MS,
+  doingElapsedSec,
+  pauseRest,
+  restRemainingSec,
+  resumeRest,
+  sessionPhase,
+  stopRest,
+  type SessionPhase,
+} from "@/lib/session-rest";
 import { pickEncouragement } from "@/lib/coach/pick";
 import encouragements from "@/data/encouragements.json";
-import { completeSetLabel, exerciseSetText, overallSetText, shouldFinish } from "@/lib/session-progress";
+import { exerciseSetText, overallSetText, phaseAfterSet, setButtonLabel, shouldFinish } from "@/lib/session-progress";
 import type { LoadMode } from "@/lib/exercise/types";
 import {
   DEFAULT_REST_SEC,
@@ -65,6 +78,11 @@ interface LocalState {
    * 继续 = 按它重算终点。老 localStorage 里没有这个字段 → 按 undefined 兜底（视为"没在暂停"）。
    */
   restRemainMs?: number | null;
+  /**
+   * 本组开始时刻（issue #75 / v1.50）：进行中态的唯一入口是【开始这组】；
+   * 与倒计时一样**按绝对时间戳判定**（锁屏 / 冷启动回来秒数接着走）。老 localStorage 无此字段 → undefined。
+   */
+  setStartedAt?: number | null;
   /** 本次临时改过的组间歇（按动作记；FR-52 的优先级里最高） */
   restFor?: Record<string, number>;
   pausedMs: number;
@@ -77,6 +95,7 @@ function loadLocal(sessionId: number): LocalState {
     draft: {},
     restEnd: null,
     restRemainMs: null,
+    setStartedAt: null,
     pausedMs: 0,
     pauseStart: null,
     lastSetAt: null,
@@ -88,6 +107,16 @@ function loadLocal(sessionId: number): LocalState {
   } catch {
     return fallback;
   }
+}
+
+/** 训练页取数形状（日今日清单 + 组 + 预填） */
+type SessionPayload = SessionDetail & {
+  prefill: Record<string, Record<string, { weightKg: number | null; reps: number | null; durationSec: number | null }>>;
+};
+
+/** mm:ss（倒计时与本组计时共用同一形状；训练时长永远不到 1 小时的那类秒数不进这里） */
+function clockText(totalSec: number): string {
+  return `${Math.floor(totalSec / 60)}:${String(totalSec % 60).padStart(2, "0")}`;
 }
 
 export default function SessionDoingPage() {
@@ -122,9 +151,7 @@ export default function SessionDoingPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: qk.session(sessionId),
-    queryFn: () => api.get<SessionDetail & { prefill: Record<string, Record<string, { weightKg: number | null; reps: number | null; durationSec: number | null }>> }>(
-      `/api/v1/sessions/${sessionId}`,
-    ),
+    queryFn: () => api.get<SessionPayload>(`/api/v1/sessions/${sessionId}`),
   });
 
   // 动作库只在打开选择器时取（91 条不必随训练页加载）
@@ -172,13 +199,26 @@ export default function SessionDoingPage() {
   }, []);
 
   /**
-   * 两态（issue #33 / v1.39）：**态由绝对时间戳判定**（第 9 章第 7 条、第 12 章第 21 条）——
+   * 三态（FR-9 v1.50 / issue #75）：**态由绝对时间戳判定**（第 9 章第 7 条、第 12 章第 21 条）——
    * 冷启动 / 锁屏 / 切走 / 刷新回来都是同一套判定，不靠"刚才在哪个页"的内存标记。
    */
-  const restState = { restEnd: local.restEnd, restRemainMs: local.restRemainMs ?? null };
+  const restState = {
+    restEnd: local.restEnd,
+    restRemainMs: local.restRemainMs ?? null,
+    setStartedAt: local.setStartedAt ?? null,
+  };
   const phase: SessionPhase = sessionPhase(restState, now);
   const remainingSec = restRemainingSec(restState, now);
+  const doingSec = doingElapsedSec(restState, now);
   const paused = local.pauseStart !== null;
+
+  // 进行中态挂太久（> 2 小时）= 僵尸态：自动回待开始，这一组不落库（FR-9 v1.50 / issue #75）
+  useEffect(() => {
+    const start = local.setStartedAt;
+    if (start != null && (now < start || now - start >= DOING_TIMEOUT_MS)) {
+      setLocal((prev) => ({ ...prev, setStartedAt: null }));
+    }
+  }, [local.setStartedAt, now]);
 
   /** 挑一句鼓励语（相邻不重复，池空有兜底）：每次进倒计时换一句 */
   const rollRestLine = useCallback((seed: number) => {
@@ -340,6 +380,28 @@ export default function SessionDoingPage() {
     }
   };
 
+  /**
+   * 这一组落库后还剩不剩动作（FR-12 v1.50 / issue #77）：用**落库后拉回来的服务端数据**判，
+   * 不在点按钮前预判 —— 网络失败时预判会出现"以为做完就收工"的假收工；
+   * `created: false` 的幂等重放也走同一条路（进度以服务端为准）。
+   */
+  const finishAfterThisSet = (payload: SessionPayload | undefined): boolean => {
+    if (!payload) return false;
+    const byExercise = new Map<number, number>();
+    for (const s of payload.sets) {
+      if (s.isWarmup) continue;
+      byExercise.set(s.exerciseId, (byExercise.get(s.exerciseId) ?? 0) + 1);
+    }
+    return (
+      phaseAfterSet(
+        payload.exercises.map((e) => ({
+          doneSets: byExercise.get(e.exerciseId) ?? 0,
+          targetSets: e.targetSets,
+        })),
+      ) === "finish"
+    );
+  };
+
   const completeSet = useMutation({
     mutationFn: async (args: { exercise: NonNullable<typeof current> }) => {
       const key = String(args.exercise.exerciseId);
@@ -378,6 +440,9 @@ export default function SessionDoingPage() {
             args.exercise.type === "time"
               ? (draft.duration ?? prefill?.durationSec ?? args.exercise.targetReps)
               : null,
+          // 本组开始时刻（FR-9 v1.50）：组间歇 = 上一组完成 → 本组开始，由服务端据此算 rest_before_sec；
+          // 没点过【开始这组】就是 null（这一组不记组间歇，13.5）
+          started_at: local.setStartedAt != null ? new Date(local.setStartedAt).toISOString() : null,
           done_at: new Date(doneAt).toISOString(),
           paused_ms_since_prev: pausedMsSincePrev,
           // 感受可留空（FR-11：可以不标；服务端只收 4 个枚举值）
@@ -387,8 +452,12 @@ export default function SessionDoingPage() {
     },
     onSuccess: async (res, args) => {
       await queryClient.invalidateQueries({ queryKey: qk.session(sessionId) });
+      // 落库成功后才判"还剩不剩动作"（issue #77）：没有待做动作 → 不起倒计时，直接进收工态
+      const finishNow = finishAfterThisSet(queryClient.getQueryData<SessionPayload>(qk.session(sessionId)));
       // 感受每组各标各的：这一组入库后清掉草稿里的标记，下一组默认回到"不标感受"
       const justDone = String(args.exercise.exerciseId);
+      // 「再练一组」的这一次请求已经兑现：复位后按服务端数据判回收工态（不再靠内存标记压着）
+      setExtraSetMode(false);
       setLocal((prev) => {
         const rest = effectiveRestSec({
           overrideSec: (prev.restFor ?? {})[justDone],
@@ -398,8 +467,10 @@ export default function SessionDoingPage() {
         return {
           ...prev,
           draft: { ...prev.draft, [justDone]: { ...prev.draft[justDone], feel: null } },
-          // 落库成功 = 进倒计时态（唯一入口）：清掉暂停残留，终点按生效档位算
-          restEnd: Date.now() + rest * 1000,
+          // 这一组结束了：清掉本组开始时刻与暂停残留
+          setStartedAt: null,
+          // 休息倒计时的唯一入口（FR-9 v1.50）：这一组落库成功且还有待做动作；最后一组不起倒计时
+          restEnd: finishNow ? null : Date.now() + rest * 1000,
           restRemainMs: null,
           pauseStart: null,
           pausedMs: 0,
@@ -407,7 +478,7 @@ export default function SessionDoingPage() {
         };
       });
       soundedRef.current = false;
-      rollRestLine(Date.now() + 1);
+      if (!finishNow) rollRestLine(Date.now() + 1);
       // 「已记下」态（issue #34）：这一组刚落地，短暂锁住按钮，连点不会走成第二次提交
       setJustRecorded(true);
       if (recordedTimerRef.current) clearTimeout(recordedTimerRef.current);
@@ -542,7 +613,8 @@ export default function SessionDoingPage() {
       </div>
 
       {/* 倒计时态（issue #33 / v1.39）：只有倒计时 —— 大号数字 + 到点提示音/震动 + 跳过休息 + 下一组目标。
-          记组卡在这一态里**整块不渲染**（一个时刻只有一个态）；数字由绝对时间戳反算，锁屏回来接着走。 */}
+          记组卡在这一态里**整块不渲染**（一个时刻只有一个态）；数字由绝对时间戳反算，锁屏回来接着走。
+          倒计时的唯一入口是【结束这组】且该组落库成功（FR-9 v1.50）。 */}
       {phase === "rest" && (
         <Card className="mb-3 text-center">
           <div className="muted text-[12px]">
@@ -559,9 +631,7 @@ export default function SessionDoingPage() {
             )}
           </div>
           <div className="mt-1 text-[64px] leading-none font-bold tabular-nums">
-            {paused || remainingSec > 0
-              ? `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, "0")}`
-              : "0:00"}
+            {paused || remainingSec > 0 ? clockText(remainingSec) : "0:00"}
           </div>
           {paused && <div className="muted mt-1 text-[12.5px]">已暂停 · 时间冻住了，继续就接着走</div>}
           {current && (
@@ -579,7 +649,7 @@ export default function SessionDoingPage() {
               className="btn btn-primary min-h-[44px] px-5 text-[14px]"
               onClick={() => setLocal((prev) => ({ ...prev, ...stopRest(), pausedMs: 0, pauseStart: null }))}
             >
-              跳过休息（直接记下一组）
+              跳过休息（去记下一组）
             </button>
             {/* 暂停是 FR-42 的契约，降级为次级按钮但**不删**：它只冻住倒计时，不是"重启" */}
             <button
@@ -748,6 +818,18 @@ export default function SessionDoingPage() {
 
           <Divider />
 
+          {/* 进行中态（FR-9 v1.50 / issue #75）：大号本组计时 + 一句"什么时候才开始算休息"；
+              计时按**开始那一刻的绝对时间戳**反算 —— 锁屏 / 切 App 回来接着走，不重置、不归零。 */}
+          {phase === "doing" && (
+            <div className="text-center">
+              <div className="muted text-[12px]">这一组在进行中（锁屏它也在走）</div>
+              <div className="mt-1 text-[56px] leading-none font-bold tabular-nums">{clockText(doingSec)}</div>
+              <div className="muted mt-1.5 text-[11.5px]">
+                做完点下面【结束这组】—— 那一刻才开始算组间歇
+              </div>
+            </div>
+          )}
+
           {/* 重量（issue #35）：降为次要区 —— 默认折叠成一行摘要，点开才展开加减器与总重。
               不填 = null（不沿用上次、不猜、不补 0）；空的读数不计容量，也绝不当 0 算（13.1）。 */}
           {current.type === "weight" && (
@@ -869,15 +951,35 @@ export default function SessionDoingPage() {
             </div>
           </div>
 
+      {/* 主按钮（FR-9 v1.50 / issue #75）：待开始 → 【开始这组】（**不起倒计时**）；
+          进行中 → 【结束这组】（落库成功才进倒计时，最后一组例外：直接收工态，issue #77） */}
       <button
         className="btn btn-primary btn-block mt-4 min-h-[58px] text-[17px]"
-        disabled={completeSet.isPending || justRecorded || (currentDone && !extraSetMode)}
+        disabled={
+          completeSet.isPending ||
+          justRecorded ||
+          (phase === "record" && currentDone && !extraSetMode)
+        }
         onClick={() => {
           ensureAudio();
-          completeSet.mutate({ exercise: current });
+          if (phase === "doing") {
+            completeSet.mutate({ exercise: current });
+            return;
+          }
+          // 开始这组：记下绝对开始时刻；顺手把 `now` 推进一格 —— 否则这一帧的
+          // `now`（250ms 心跳的旧值）还早于开始时刻，卡片会闪回"待开始"
+          const startedAt = Date.now();
+          setNow(startedAt);
+          setLocal((prev) => ({
+            ...prev,
+            setStartedAt: startedAt,
+            restEnd: null,
+            restRemainMs: null,
+          }));
         }}
       >
-        {completeSetLabel({
+        {setButtonLabel({
+          phase: phase === "doing" ? "doing" : "record",
           exerciseDone: currentDone && !extraSetMode,
           pending: completeSet.isPending,
           justRecorded,

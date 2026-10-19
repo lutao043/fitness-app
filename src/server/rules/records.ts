@@ -115,6 +115,8 @@ export interface SetWrite {
   reps: number | null;
   durationSec: number | null;
   variantId: number | null;
+  /** 本组开始时刻（FR-9 v1.50 / issue #75）；没点过【开始这组】就是 null */
+  startedAt: string | null;
   doneAt: string;
   pausedMsSincePrev: number;
   feel: (typeof SET_FEELS)[number] | null;
@@ -122,9 +124,11 @@ export interface SetWrite {
 }
 
 /**
- * 记一组（13.1 / 13.14 / FR-13 / FR-11 / FR-53 / v1.26）：
+ * 记一组（13.1 / 13.14 / FR-13 / FR-11 / FR-53 / FR-9 v1.50）：
  * 读数越界整条拒绝（**0 合法**）；`feel` 非法值 **400**（不再静默当"没标"）；
- * `is_warmup: true` **400**（v1.26 起不再记录热身组）。
+ * `is_warmup: true` **400**（v1.26 起不再记录热身组）；
+ * `started_at` 给了就得能解析（它决定组间歇 = 上一组完成 → 本组开始，13.5）；
+ * 给了但解析不了 → 400（不静默吞成 null：那会把"点过开始"的组变成"没点"）。
  */
 export function parseSetBody(
   body: Record<string, unknown>,
@@ -170,6 +174,14 @@ export function parseSetBody(
     issues.push("热身组不再记录（v1.26 起改为练前提示）：别传 is_warmup: true");
   }
 
+  // 本组开始时刻（FR-9 v1.50）：缺省 = null（忘点开始 / 补录 —— 这一组不记组间歇，13.5）
+  const rawStartedAt = readTrimmed(body.started_at ?? body.startedAt);
+  let startedAt: string | null = null;
+  if (rawStartedAt) {
+    if (!Number.isFinite(Date.parse(rawStartedAt))) issues.push("started_at 不是合法时间戳（ISO 8601）");
+    else startedAt = rawStartedAt;
+  }
+
   if (issues.length > 0) return { ok: false, issues };
   return {
     ok: true,
@@ -181,6 +193,7 @@ export function parseSetBody(
       reps,
       durationSec: readNumber(body.duration_sec ?? body.durationSec) ?? null,
       variantId: readNumber(body.variant_id ?? body.variantId) ?? null,
+      startedAt,
       doneAt: readTrimmed(body.done_at ?? body.doneAt) ?? opts.defaultDoneAt,
       pausedMsSincePrev: readNumber(body.paused_ms_since_prev ?? body.pausedMsSincePrev) ?? 0,
       feel,

@@ -63,6 +63,7 @@ export async function GET(request: Request) {
       totalLoadKg: number | null;
       restBeforeSec: number | null;
       sameExercise: number | boolean;
+      startedAt: string | null;
       doneAt: string;
       feel: string | null;
       skipped: number | boolean;
@@ -87,6 +88,7 @@ export async function GET(request: Request) {
         s.skipped ? 1 : 0,
         s.isWarmup ? 1 : 0,
         s.doneAt,
+        s.startedAt,
         s.feel ?? "",
       ];
     });
@@ -108,6 +110,7 @@ export async function GET(request: Request) {
         "skipped",
         "is_warmup",
         "done_at",
+        "started_at",
         "feel",
       ],
       rows,

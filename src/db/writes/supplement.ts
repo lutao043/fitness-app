@@ -6,6 +6,7 @@ import { and, asc, desc, eq, gte } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import * as schema from "@/db/schema";
 import type { DateStr } from "@/lib/time";
+import type { SupplementDayKind } from "@/lib/reminder/date-kind";
 
 /* ———————————————————————— 规则管理：补剂清单（FR-33） ———————————————————————— */
 
@@ -15,7 +16,7 @@ export function supplementById(db: Db, id: number) {
 
 export function createSupplement(
   db: Db,
-  input: { name: string; times: string[]; doseText?: string; enabled?: boolean },
+  input: { name: string; times: string[]; doseText?: string; enabled?: boolean; dayKind?: SupplementDayKind },
 ): { id: number } {
   const maxOrder = db
     .select({ orderNo: schema.supplement.orderNo })
@@ -30,6 +31,7 @@ export function createSupplement(
       doseText: input.doseText ?? "",
       orderNo: maxOrder + 1,
       enabled: input.enabled ?? true,
+      dayKind: input.dayKind ?? "daily",
     })
     .returning({ id: schema.supplement.id })
     .get();
@@ -38,13 +40,14 @@ export function createSupplement(
 export function updateSupplement(
   db: Db,
   id: number,
-  patch: { name?: string; times?: string[]; doseText?: string; enabled?: boolean },
+  patch: { name?: string; times?: string[]; doseText?: string; enabled?: boolean; dayKind?: SupplementDayKind },
 ): { updated: boolean } {
   const values: Record<string, unknown> = {};
   if (patch.name !== undefined) values.name = patch.name;
   if (patch.times !== undefined) values.times = patch.times;
   if (patch.doseText !== undefined) values.doseText = patch.doseText;
   if (patch.enabled !== undefined) values.enabled = patch.enabled;
+  if (patch.dayKind !== undefined) values.dayKind = patch.dayKind;
   if (Object.keys(values).length === 0) return { updated: false };
   const res = db.update(schema.supplement).set(values).where(eq(schema.supplement.id, id)).run();
   return { updated: res.changes > 0 };

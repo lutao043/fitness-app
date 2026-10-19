@@ -212,7 +212,7 @@ export default function TodayPage() {
   const unit = t.unit;
   const targetWeight = t.body.latestMorning?.weightKg ?? t.body.latestAny?.weightKg ?? null;
   // 目标值统一读 user 表（不再硬编码 65），与身体页同源
-  const target = t.target ?? 65;
+  const target = t.target ?? 70;
   const remainRaw = targetWeight !== null ? Math.round((targetWeight - target) * 10) / 10 : null;
   // 展示单位（§1.1）：库里一律 kg，只有"距目标"这一个数字要换算
   const remain = remainRaw === null ? null : kgToDisplay(remainRaw, unit);

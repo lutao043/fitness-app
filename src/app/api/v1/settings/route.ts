@@ -1,6 +1,6 @@
 /**
- * GET   /api/v1/settings —— 读设置（单位 / 提醒时间与总开关 / 组间歇默认值 / 假期表元信息 /
- *                            当前方案（含槽位与锚点）/ 放纵餐设置）
+ * GET   /api/v1/settings —— 读设置（单位 / 提醒时间两档（工作日 + 休息日）与总开关 / 组间歇默认值 /
+ *                            假期表元信息 / 当前方案（含槽位与锚点）/ 放纵餐设置）
  * PATCH /api/v1/settings —— 改设置（改完立即生效，FR-40：无需重启）
  *
  * 假期表**没有**写入口（FR-24 / 13.12：唯一写入方是助手）。这里只回状态。
@@ -26,7 +26,10 @@ function readSettings() {
   const slot = slotOf(today, state.ctx, state.slots);
   return {
     unit: settings.unit === "lb" ? "lb" : "kg",
+    /** 训练提醒：工作日档（工作日 + 调休上班日走它，FR-40 / 13.21） */
     reminderTime: settings.reminder_time ?? "22:30",
+    /** 训练提醒：休息日档（周末 + 法定节假日走它；默认与工作日档同值 = 分档前行为，v1.49） */
+    reminderTimeRestday: settings.reminder_time_restday ?? "22:30",
     workoutReminderOn: settings.workout_reminder_on !== "false",
     restDefaultSec: Number(settings.rest_default_sec ?? 90),
     holidays: holidayWriteMeta(db),
@@ -69,6 +72,12 @@ export async function PATCH(request: Request) {
   if (body.reminderTime !== undefined) {
     if (!isValidTimeStr(body.reminderTime)) return badRequest("reminderTime 必须是 HH:mm", undefined, request);
     setSetting(db, "reminder_time", String(body.reminderTime));
+  }
+  if (body.reminderTimeRestday !== undefined) {
+    if (!isValidTimeStr(body.reminderTimeRestday)) {
+      return badRequest("reminderTimeRestday 必须是 HH:mm", undefined, request);
+    }
+    setSetting(db, "reminder_time_restday", String(body.reminderTimeRestday));
   }
   if (body.workoutReminderOn !== undefined) {
     if (typeof body.workoutReminderOn !== "boolean") return badRequest("workoutReminderOn 必须是布尔", undefined, request);

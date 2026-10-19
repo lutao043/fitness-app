@@ -152,6 +152,8 @@ export interface SetLogInput {
   durationSec?: number | null;
   variantId?: number | null;
   totalLoadKg?: number | null;
+  /** 本组开始时刻（FR-9 v1.50）：组间歇的起点是它、不是 doneAt */
+  startedAt?: string | null;
   restBeforeSec?: number | null;
   sameExercise?: boolean;
   doneAt?: string;
@@ -170,6 +172,7 @@ export function upsertSetLog(db: Db, input: SetLogInput): { id: number; created:
     durationSec: input.durationSec ?? null,
     variantId: input.variantId ?? null,
     totalLoadKg: input.totalLoadKg ?? null,
+    startedAt: input.startedAt ?? null,
     restBeforeSec: input.restBeforeSec ?? null,
     sameExercise: input.sameExercise ?? false,
     doneAt: input.doneAt ?? new Date().toISOString(),

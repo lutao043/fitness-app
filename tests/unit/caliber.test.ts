@@ -101,7 +101,7 @@ describe("13.5 组间歇与换项间隔", () => {
   const ex = (exercise: string, variantId: string | null = null) => ({ exercise, variantId });
 
   it("第一组没有 rest_before_sec", () => {
-    const r = restBeforeSec({ prevDoneAt: null, now: 1000, prev: null, current: ex("卧推") });
+    const r = restBeforeSec({ prevDoneAt: null, startedAt: 1000, prev: null, current: ex("卧推") });
     expect(r.restBeforeSec).toBeNull();
     expect(r.sameExercise).toBe(false);
   });
@@ -110,7 +110,7 @@ describe("13.5 组间歇与换项间隔", () => {
     const t0 = 1_000_000;
     const r = restBeforeSec({
       prevDoneAt: t0,
-      now: t0 + 3_000 + 60_000 + 3_000,
+      startedAt: t0 + 3_000 + 60_000 + 3_000,
       pausedMsBetween: 60_000,
       prev: ex("卧推"),
       current: ex("卧推"),
@@ -121,13 +121,13 @@ describe("13.5 组间歇与换项间隔", () => {
 
   it("换动作 / 换器械变体 → sameExercise = false", () => {
     expect(
-      restBeforeSec({ prevDoneAt: 0, now: 90_000, prev: ex("卧推"), current: ex("高位下拉") })
+      restBeforeSec({ prevDoneAt: 0, startedAt: 90_000, prev: ex("卧推"), current: ex("高位下拉") })
         .sameExercise,
     ).toBe(false);
     expect(
       restBeforeSec({
         prevDoneAt: 0,
-        now: 90_000,
+        startedAt: 90_000,
         prev: ex("高位下拉", null),
         current: ex("高位下拉", "v-cable"),
       }).sameExercise,
@@ -135,7 +135,7 @@ describe("13.5 组间歇与换项间隔", () => {
     expect(
       restBeforeSec({
         prevDoneAt: 0,
-        now: 90_000,
+        startedAt: 90_000,
         prev: ex("高位下拉", "v-cable"),
         current: ex("高位下拉", "v-cable"),
       }).sameExercise,
@@ -143,7 +143,20 @@ describe("13.5 组间歇与换项间隔", () => {
   });
 
   it("负数间隔（时钟异常）不写库", () => {
-    expect(restBeforeSec({ prevDoneAt: 10_000, now: 5_000, prev: ex("卧推"), current: ex("卧推") }).restBeforeSec).toBeNull();
+    expect(restBeforeSec({ prevDoneAt: 10_000, startedAt: 5_000, prev: ex("卧推"), current: ex("卧推") }).restBeforeSec).toBeNull();
+  });
+
+  it("没有开始时刻（忘点开始 / 老数据）= 没有真实间隔 → null，不退回「完成 − 完成」（13.5 v1.50）", () => {
+    const r = restBeforeSec({ prevDoneAt: 1_000_000, startedAt: null, prev: ex("卧推"), current: ex("卧推") });
+    expect(r.restBeforeSec).toBeNull();
+    // same_exercise 与时间无关，照常判定（历史行的展示要靠它）
+    expect(r.sameExercise).toBe(true);
+  });
+
+  it("算的是「上一组完成 → 本组开始」：本组自身的做组耗时不算进休息（issue #75 的线上偏大）", () => {
+    // 上一组 0s 完成 → 歇 90s → 本组 90s 开始做、做了 40s、130s 记下
+    const r = restBeforeSec({ prevDoneAt: 0, startedAt: 90_000, prev: ex("卧推"), current: ex("卧推") });
+    expect(r.restBeforeSec).toBe(90); // 旧调用方传 done_at（130s）= 把 40s 做组耗时算进休息
   });
 
   it("组间歇均值只算同动作，换项间隔单列（13.5）", () => {

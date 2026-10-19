@@ -6,6 +6,7 @@ import { checkText, readBool, readTrimmed } from "./core";
 import type { ParseResult } from "./core";
 
 import { isValidTimeStr } from "@/lib/time";
+import { SUPPLEMENT_DAY_KINDS, type SupplementDayKind } from "@/lib/reminder/date-kind";
 
 /* ————————————————————————— 补剂清单（FR-33） ————————————————————————— */
 export interface SupplementWrite {
@@ -13,6 +14,8 @@ export interface SupplementWrite {
   times?: string[];
   doseText?: string;
   enabled?: boolean;
+  /** 适用日（v1.49 / 13.21）：daily 默认 = 每天；只作用于提醒 */
+  dayKind?: SupplementDayKind;
 }
 
 export function parseSupplementBody(
@@ -57,6 +60,18 @@ export function parseSupplementBody(
     else value.enabled = enabled;
   } else if (opts.requireName) {
     value.enabled = true;
+  }
+  // 适用日（v1.49 / 13.21）：白名单，非法值整条 400（不静默兜底成 daily）
+  const rawDayKind = body.day_kind ?? body.dayKind;
+  if (rawDayKind !== undefined) {
+    const dayKind = readTrimmed(rawDayKind);
+    if (!dayKind || !SUPPLEMENT_DAY_KINDS.includes(dayKind as SupplementDayKind)) {
+      issues.push('dayKind 只能是 "daily" / "workday" / "restday"');
+    } else {
+      value.dayKind = dayKind as SupplementDayKind;
+    }
+  } else if (opts.requireName) {
+    value.dayKind = "daily";
   }
 
   if (issues.length > 0) return { ok: false, issues };
